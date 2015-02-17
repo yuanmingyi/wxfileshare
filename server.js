@@ -5,6 +5,7 @@ var port = process.env.port || 1337;
 
 log4js.configure('./config/log4js.json', {});
 var logger = log4js.getLogger("app");
+wxCallbackApiTest.setLogger(logger);
 
 http.createServer(function (req, res) {
     res.writeHead(200, { 'Content-Type': 'text/plain' });

@@ -3,10 +3,11 @@ var wxCallbackApiTest = (function () {
     var encodingAesKey = "6z0XrB4QGNEKR6oJikWAWvqDOl6CB4Pni9Z6HAjHzKS";
     var obj = {};
 
+    var logger = require("log4js").getLogger("console");
     var queryString = require('querystring');
     var crypto = require('crypto');
     var parseString = require('xml2js').parseString;
-    
+
     obj.valid = function (url) {
         var params = queryString.parse(url);
         var echoStr = params["echostr"];
@@ -16,6 +17,10 @@ var wxCallbackApiTest = (function () {
         }
 
         return "";
+    };
+
+    obj.setLogger = function (newLogger) {
+        logger = newLogger;
     };
 
     var checkSignature = function (params) {
