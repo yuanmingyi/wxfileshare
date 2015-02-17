@@ -6,7 +6,7 @@
   "contributors": [],
   "main": "./server.js",
   "keywords": [],
-  "dependencies": {},
+  "dependencies": {"xml2js"},
   "noAnalyze": true,
   "engines": {
     "node": ">=0.6"
