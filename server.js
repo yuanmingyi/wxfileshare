@@ -2,7 +2,7 @@ var http = require('http');
 var url = require('url');
 var util = require('util');
 var wxCallbackApiTest = require('./wxCallbackApiTest');
-var port = 80;
+var port = process.env.port || 1337;
 
 http.createServer(function (req, res) {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
