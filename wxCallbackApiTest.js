@@ -33,7 +33,7 @@ var wxCallbackApiTest = (function(){
 		console.log("signature: " + signature);
         console.log("validate str: " + tmpStr);
 
-		if ($tmpStr == $signature) {
+		if (tmpStr == signature) {
 			return true;
 		} else {
 			return false;
