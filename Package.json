@@ -7,7 +7,8 @@
   "main": "./server.js",
   "keywords": [],
   "dependencies": {
-    "xml2js": ">=0.4"
+    "xml2js": ">=0.4",
+    "log4js": ">=0.6"
   },
   "noAnalyze": true,
   "engines": {

@@ -1,13 +1,15 @@
 var http = require('http');
-var url = require('url');
-var util = require('util');
+var log4js = require('log4js');
 var wxCallbackApiTest = require('./wxCallbackApiTest');
 var port = process.env.port || 1337;
 
+log4js.configure('./config/log4js.json', {});
+var logger = log4js.getLogger("app");
+
 http.createServer(function (req, res) {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
-    var ret = wxCallbackApiTest.valid(req);
+    var ret = wxCallbackApiTest.valid(req.url);
     res.end(ret);
 }).listen(port);
 
-console.log('HTTP server is listening at port ' + port);
+logger.info('HTTP server is listening at port ' + port);
