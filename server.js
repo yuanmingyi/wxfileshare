@@ -4,7 +4,7 @@ var wxCallbackApiTest = require('./wxCallbackApiTest');
 var port = process.env.port || 1337;
 
 log4js.configure('./config/log4js.json', {});
-var logger = log4js.getLogger("console");
+var logger = log4js.getLogger("app");
 wxCallbackApiTest.setLogger(logger);
 
 http.createServer(function (req, res) {
