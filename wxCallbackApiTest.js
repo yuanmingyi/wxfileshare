@@ -6,15 +6,15 @@ var wxCallbackApiTest = (function () {
     var logger = require("log4js").getLogger("console");
     var crypto = require('crypto');
     var parseString = require('xml2js').parseString;
+    var url = require('url');
 
-    obj.valid = function (url) {
-        logger.info("test url: " + url);
-        var urlobj = url.parse(url, true);
+    obj.valid = function (urlStr) {
+        logger.info("test url: " + urlStr);
+        var urlobj = url.parse(urlStr, true);
         var params = urlobj.query;
-        var echoStr = params["echostr"];
         if (checkSignature(params)) {
             logger.info("signature check successfully");
-            return echoStr;
+            return params["echostr"];
         }
 
         return "";
