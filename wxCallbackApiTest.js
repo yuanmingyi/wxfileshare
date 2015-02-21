@@ -4,12 +4,13 @@ var wxCallbackApiTest = (function () {
     var obj = {};
 
     var logger = require("log4js").getLogger("console");
-    var queryString = require('querystring');
     var crypto = require('crypto');
     var parseString = require('xml2js').parseString;
 
     obj.valid = function (url) {
-        var params = queryString.parse(url);
+        logger.info("test url: " + url);
+        var urlobj = url.parse(url, true);
+        var params = urlobj.query;
         var echoStr = params["echostr"];
         if (checkSignature(params)) {
             logger.info("signature check successfully");
