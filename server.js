@@ -29,7 +29,7 @@ app.use(function (err, req, res, next) {
 
 // wx verification
 app.get("/", function (req, res) {
-    var ret = wxCallbackApiTest.valid(req.url);
+    var ret = wxCallbackApiTest.valid(req);
     res.send(ret);
 });
 
@@ -126,7 +126,7 @@ app.get("/download/:hashcode", function (req, res) {
 });
 
 function makeDownloadUrl(req, hashcode) {
-    return req.protocol + '://' + req.hostname + ':' + port + '/download/' + hashcode;
+    return req.protocol + '://' + req.get('host') + '/download/' + hashcode;
 }
 
 function sendSafeResponse(resp, code, obj) {
