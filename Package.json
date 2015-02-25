@@ -7,13 +7,16 @@
   "main": "./server.js",
   "keywords": [],
   "dependencies": {
-    "xml2js": ">=0.4",
+    "azure-storage": ">=0.1",
+    "busboy": "^0.2.9",
+    "express": "^4.12.0",
+    "jade": "^1.9.2",
     "log4js": ">=0.6"
   },
   "noAnalyze": true,
   "engines": {
     "node": ">=0.6"
-  },  
+  },
   "devDependencies": {},
   "optionalDependencies": {}
 }

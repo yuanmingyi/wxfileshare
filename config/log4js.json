@@ -4,7 +4,8 @@
       "type": "clustered",
       "appenders": [
         {
-          "type": "console"
+          "type": "console",
+          "level": "INFO"
         },
         {
           "type": "dateFile",

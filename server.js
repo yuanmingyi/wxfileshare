@@ -1,18 +1,146 @@
-var http = require('http');
-var log4js = require('log4js');
-var util = require('util');
-var wxCallbackApiTest = require('./wxCallbackApiTest');
-var port = process.env.port || 1337;
+var express = require("express");
+var Busboy = require("busboy");
+var util = require("util");
+var fs = require("fs");
+var format = util.format;
 
-log4js.configure('./config/log4js.json', {});
-var logger = log4js.getLogger("app");
-wxCallbackApiTest.setLogger(logger);
+var config = require("./app/config").load("server");
+var log = require("./app/logger");
+var wxCallbackApiTest = require("./app/wxCallbackApiTest");
+var sharingFiles = require("./app/sharingFiles");
 
-http.createServer(function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    logger.info("GET headers: \n" + util.inspect(req.headers));
+var app = express();
+var logger = log.logger();
+
+var maxFileSize = parseInt(config.maxFileSize);
+var connectionTmeout = parseInt(config.connectionTimeout);
+
+var port = process.env.port || parseInt(config.defaultPort);
+
+log.use(app);
+
+app.set('views', './views');
+app.set('view engine', 'jade');
+
+app.use(function (err, req, res, next) {
+    logger.error(err.stack);
+    res.status(500).send('Unexpected error occured!');
+});
+
+// wx verification
+app.get("/", function (req, res) {
     var ret = wxCallbackApiTest.valid(req.url);
-    res.end(ret);
-}).listen(port);
+    res.send(ret);
+});
 
-logger.info('HTTP server is listening at port ' + port);
+// upload file page
+app.route("/upload")
+.get(function (req, res) {
+    res.render("upload", { maxFileSize: maxFileSize });
+})
+.post(function (req, res) {
+    var busboy = new Busboy({ headers: req.headers, limits: { fileSize: maxFileSize, files: 1} });
+    var successful = true;
+    var uploadStream;
+    busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
+        logger.trace("busboy start file upload");
+        sharingFiles.uploadStream("", filename, function (result, hashcode, stream) {
+            successful = result;
+            logger.trace("successful: " + successful);
+            if (successful) {
+                logger.trace("upload stream created");
+                var downloadUrl = makeDownloadUrl(req, hashcode);
+                uploadStream = stream;
+                uploadStream.on('finish', function () {
+                    logger.trace("upload stream finished");
+                    sendSafeResponse(res, 200, { filename: filename, url: downloadUrl, truncated: file.truncated });
+                });
+                file.pipe(uploadStream);
+            } else {
+                file.resume();
+            }
+        });
+        setTimeout(function () {
+            logger.trace("upload stream timeout. successful: " + successful);
+            req.unpipe(busboy);
+            busboy.end();
+            sendSafeResponse(res, 500, "Time out");
+            if (successful) {
+                file.unpipe(uploadStream);
+                uploadStream.end();
+            }
+        }, connectionTmeout);
+    });
+    busboy.on('finish', function () {
+        logger.trace("busboy finished");
+        if (!successful) {
+            sendSafeResponse(res, 500, "Upload failed");
+        }
+    });
+    busboy.on('filesLimit', function () {
+        logger.warn("file uploaded is truncated");
+    });
+    req.pipe(busboy);
+});
+
+// fetch the resources files
+app.get("/resources/:name", function (req, res) {
+    var options = {
+        root: __dirname + "/resources/",
+        dotfiles: "deny",
+        headers: {
+            "x-timestamp": Date.now(),
+            "x-sent": true
+        }
+    };
+
+    var filename = req.params.name;
+    res.sendFile(filename, options, function (err) {
+        if (err) {
+            logger.Error(err);
+            res.status(err.status).end();
+        } else {
+            logger.trace("Sent:" + filename);
+        }
+    });
+});
+
+app.get("/download/:hashcode", function (req, res) {
+    var hashcode = req.params.hashcode;
+    sharingFiles.fileInfo(hashcode, function (err, fileinfo) {
+        if (!err) {
+            res.set({
+                'Content-Type': 'application/octet-stream',
+                'Content-Disposition': 'attachment; filename="' + fileinfo.name + '"'
+            });
+            var downloadStream = sharingFiles.downloadStream(hashcode, function (err) {
+                if (!!err) {
+                    res.status(500).send("Unable to download the file");
+                }
+            });
+            downloadStream.pipe(res);
+        } else {
+            res.status(500).send("Unable to fetch the file information");
+        }
+    });
+});
+
+function makeDownloadUrl(req, hashcode) {
+    return req.protocol + '://' + req.hostname + ':' + port + '/download/' + hashcode;
+}
+
+function sendSafeResponse(resp, code, obj) {
+    if (!resp.headersSent) {
+        var msg = "response error";
+        if (code === 200) {
+            msg = "response OK";
+        }
+        logger.trace(format("%s: %s", msg, util.inspect(obj)));
+        resp.status(code).send(obj);
+    } else {
+        logger.trace("response has already been sent");
+    }
+};
+
+app.listen(port);
+logger.info('Express started on port ' + port);

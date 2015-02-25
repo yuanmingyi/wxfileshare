@@ -1,0 +1,15 @@
+body {
+    text-align: center;
+    font-size: large;
+}
+
+div {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.hiddenDiv {
+    display: none;
+}

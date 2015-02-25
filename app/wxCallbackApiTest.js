@@ -1,17 +1,15 @@
 var wxCallbackApiTest = (function () {
-    var token = "420xxx19841029";
-    var encodingAesKey = "6z0XrB4QGNEKR6oJikWAWvqDOl6CB4Pni9Z6HAjHzKS";
+    var config = require("./config").load("wxInterface");
+    var token = config.token;
+    var encodingAesKey = config.encodingAesKey;
     var obj = {};
 
-    var logger = require("log4js").getLogger("console");
+    var logger = require("./logger").logger();
     var crypto = require('crypto');
-    var parseString = require('xml2js').parseString;
-    var url = require('url');
 
-    obj.valid = function (urlStr) {
-        logger.info("test url: " + urlStr);
-        var urlobj = url.parse(urlStr, true);
-        var params = urlobj.query;
+    obj.valid = function (req) {
+        logger.info("test url: " + req.url);
+        var params = req.query;
         if (checkSignature(params)) {
             logger.info("signature check successfully");
             return params["echostr"];
