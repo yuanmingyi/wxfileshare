@@ -140,38 +140,43 @@ function sendSafeResponse(resp, code, obj) {
 }
 
 function composeDownloadHtmlHeaders(fileInfo) {
-    var ext = fileInfo.name.slice(fileInfo.name.lastIndexOf('.') + 1);
+    var bound = fileInfo.name.lastIndexOf('.');
+    if (bound === -1) {
+        bound = fileInfo.name.length;
+    }
+    var basename = fileInfo.name.slice(0, bound);
+    var ext = fileInfo.name.slice(bound);
     var contentType = '';
-    switch (ext) {
-        case 'pdf':
+    switch (ext.toLowerCase()) {
+        case '.pdf':
             contentType = 'application/pdf';
             break;
-        case 'exe':
+        case '.exe':
             contentType = 'application/octet-stream';
             break;
-        case 'zip':
+        case '.zip':
             contentType = 'application/zip';
             break;
-        case 'doc':
-        case 'docx':
+        case '.doc':
+        case '.docx':
             contentType = 'application/msword';
             break;
-        case 'xls':
-        case 'xlsx':
+        case '.xls':
+        case '.xlsx':
             contentType = 'application/vnd.ms-excel';
             break;
-        case 'ppt':
-        case 'pptx':
+        case '.ppt':
+        case '.pptx':
             contentType = 'application/vnd.ms-powerpoint';
             break;
-        case 'gif':
+        case '.gif':
             contentType = 'image/gif';
             break;
-        case 'png':
+        case '.png':
             contentType = 'image/png';
             break;
-        case 'jpeg':
-        case 'jpg':
+        case '.jpeg':
+        case '.jpg':
             contentType = 'image/jpg';
             break;
         default:
@@ -180,8 +185,7 @@ function composeDownloadHtmlHeaders(fileInfo) {
     };
     return {
         'Content-Type': contentType,
-        'Content-Disposition': 'attachment; filename="' + fileinfo.name + '"',
-        'Content-Transfer-Encoding': 'binary'
+        'Content-Disposition': 'attachment; filename="' + basename + ext.toUpperCase() + '"'
     }
 }
 
