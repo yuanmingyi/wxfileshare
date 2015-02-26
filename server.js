@@ -109,10 +109,7 @@ app.get("/download/:hashcode", function (req, res) {
     var hashcode = req.params.hashcode;
     sharingFiles.fileInfo(hashcode, function (err, fileinfo) {
         if (!err) {
-            res.set({
-                'Content-Type': 'application/octet-stream',
-                'Content-Disposition': 'attachment; filename="' + fileinfo.name + '"'
-            });
+            res.set(composeDownloadHtmlHeaders(fileinfo));
             var downloadStream = sharingFiles.downloadStream(hashcode, function (err) {
                 if (!!err) {
                     res.status(500).send("Unable to download the file");
@@ -140,7 +137,53 @@ function sendSafeResponse(resp, code, obj) {
     } else {
         logger.trace("response has already been sent");
     }
-};
+}
+
+function composeDownloadHtmlHeaders(fileInfo) {
+    var ext = fileInfo.name.slice(fileInfo.name.lastIndexOf('.') + 1);
+    var contentType = '';
+    switch (ext) {
+        case 'pdf':
+            contentType = 'application/pdf';
+            break;
+        case 'exe':
+            contentType = 'application/octet-stream';
+            break;
+        case 'zip':
+            contentType = 'application/zip';
+            break;
+        case 'doc':
+        case 'docx':
+            contentType = 'application/msword';
+            break;
+        case 'xls':
+        case 'xlsx':
+            contentType = 'application/vnd.ms-excel';
+            break;
+        case 'ppt':
+        case 'pptx':
+            contentType = 'application/vnd.ms-powerpoint';
+            break;
+        case 'gif':
+            contentType = 'image/gif';
+            break;
+        case 'png':
+            contentType = 'image/png';
+            break;
+        case 'jpeg':
+        case 'jpg':
+            contentType = 'image/jpg';
+            break;
+        default:
+            contentType = 'application/force-download';
+            break;
+    };
+    return {
+        'Content-Type': contentType,
+        'Content-Disposition': 'attachment; filename="' + fileinfo.name + '"',
+        'Content-Transfer-Encoding': 'binary'
+    }
+}
 
 app.listen(port);
 logger.info('Express started on port ' + port);
