@@ -1,5 +1,5 @@
 {
-    "maxFileSize": 5242880,
+    "maxFileSize": 10485760,
     "connectionTimeout": 900000,
     "defaultPort": 1337
 }

@@ -1,5 +1,5 @@
 window.onload = function () {
-    var maxFileSize = parseInt(document.getElementById("maxFileSize").innerText) * 10;
+    var maxFileSize = parseInt(document.getElementById("maxFileSize").innerText);
     var form = document.getElementById("form0");
     var uploader = document.getElementById("uploader");
     uploader.onchange = function (ev) {
