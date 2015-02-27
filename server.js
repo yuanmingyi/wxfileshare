@@ -84,27 +84,32 @@ app.route("/upload")
 });
 
 // fetch the resources files
-app.get("/resources/:name", function (req, res) {
-    var options = {
-        root: __dirname + "/resources/",
-        dotfiles: "deny",
-        headers: {
-            "x-timestamp": Date.now(),
-            "x-sent": true
-        }
+var getResources = function (path) {
+    return function (req, res) {
+        var options = {
+            root: __dirname + "/resources/" + path,
+            dotfiles: "deny",
+            headers: {
+                "x-timestamp": Date.now(),
+                "x-sent": true
+            }
+        };
+        var filename = req.params.name;
+        res.sendFile(filename, options, function (err) {
+            if (err) {
+                logger.Error(err);
+                res.status(err.status).end();
+            } else {
+                logger.trace("Sent:" + filename);
+            }
+        });
     };
+};
 
-    var filename = req.params.name;
-    res.sendFile(filename, options, function (err) {
-        if (err) {
-            logger.Error(err);
-            res.status(err.status).end();
-        } else {
-            logger.trace("Sent:" + filename);
-        }
-    });
-});
+app.get("/resources/qrcode/:name", getResources('qrcode/'));
+app.get("/resources/:name", getResources(''));
 
+// download files
 app.get("/download/:hashcode", function (req, res) {
     var hashcode = req.params.hashcode;
     sharingFiles.fileInfo(hashcode, function (err, fileinfo) {
