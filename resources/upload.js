@@ -59,7 +59,7 @@ function addFileUploaded(container, obj) {
     var div = addElement('div');
     div.appendChild(addElement('span', '上传文件(24小时有效)：'));
     div.appendChild(addElement('span', '<a target="_blank" href="' + obj.url + '">' + limitName(obj.filename) + '</a>'));
-    div.appendChild(addElement('span', '<a href="#" onclick="showQr(\'' + obj.url + '\')">查看二维码</a>'));
+    div.appendChild(addElement('span', '&nbsp&nbsp<a href="#" onclick="showQr(\'' + obj.url + '\')">查看二维码</a>'));
 
     if (container.firstElementChild) {
         container.insertBefore(div, container.firstElementChild);
@@ -91,11 +91,11 @@ var showQr = (function () {
 
     return function (url) {
         var qrImg = document.getElementById('qrImg');
-        qrImg.display = 'block';
+        qrImg.style.display = 'block';
         qrcodedraw.draw(qrImg, url, function (error, canvas) {
             if (error) {
                 alert('生成二维码失败');
-                qrImg.display = 'none';
+                qrImg.style.display = 'none';
             }
         });
     }

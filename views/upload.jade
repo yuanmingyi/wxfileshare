@@ -1,24 +1,24 @@
 // Jade
 doctype html
 html(lang="en")
-  head
-    meta(charset="utf-8") 
-    link(type="text/css", rel="stylesheet", href="/resources/upload.css")
-    title upload files
-    <!--[if ie]><script type="text/javascript" src="/resources/qrcode/excanvas.js"></script><![endif]-->
-	<script src="/resources/qrcode/qrcode.js"></script>
-    script(type='text/javascript' src="/resources/upload.js")
-  body
-    #maxFileSize.hiddenDiv!= maxFileSize
-    canvas#qrImg(onclick="this.display='none'")
-    form(id="form0", enctype="multipart/form-data", method="post")
-      div
-        span#hint 请点击图标上传文件
-        span#loadingText
-      div
-        img(id="uploadButton", alt="click to upload a file", src="/resources/upload-icon.png", onclick="upload()")
-      div
-        input(name="file", id="uploader", type="file" hidden="hidden")
-      //-div
-        input(type="submit", onclick="submit" value="confirm upload")
-      #uploadContainer
+    head
+        meta(charset="utf-8") 
+        link(type="text/css", rel="stylesheet", href="/resources/upload.css")
+        title upload files
+        <!--[if ie]><script type="text/javascript" src="/resources/qrcode/excanvas.js"></script><![endif]-->
+        script(src="/resources/qrcode/qrcode.js")
+        script(type='text/javascript' src="/resources/upload.js")
+    body
+        #maxFileSize.hiddenDiv!= maxFileSize
+        canvas#qrImg(onclick="this.style.display='none'")
+        form(id="form0", enctype="multipart/form-data", method="post")
+            div
+                span#hint 请点击图标上传文件
+                span#loadingText
+            div
+                img(id="uploadButton", alt="click to upload a file", src="/resources/upload-icon.png", onclick="upload()")
+            div
+                input(name="file", id="uploader", type="file" hidden="hidden")
+            //-div
+                input(type="submit", onclick="submit" value="confirm upload")
+        #uploadContainer

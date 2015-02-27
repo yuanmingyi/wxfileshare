@@ -16,7 +16,8 @@ div {
 
 .qrImg {
     display: none;
-    position: absolute;
+    position: relative;
+    float: left;
     width: fit-content;
     height: fit-content;
     z-index: 100;
