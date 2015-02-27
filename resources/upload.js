@@ -73,7 +73,7 @@ function addFileUploaded(container, obj) {
     var div = addElement('div');
     div.appendChild(addElement('span', '上传文件(24小时有效)：'));
     div.appendChild(addElement('span', '<a target="_blank" href="' + obj.url + '">' + limitName(obj.filename) + '</a>'));
-    div.appendChild(addElement('span', '&nbsp&nbsp<a href="#" onclick="showQr(\'' + obj.url + '\')">查看二维码</a>'));
+    div.appendChild(addElement('span', '&nbsp<a href="#" onclick="showQr(\'' + obj.url + '\')">查看二维码</a>'));
 
     if (container.firstElementChild) {
         container.insertBefore(div, container.firstElementChild);
@@ -121,9 +121,9 @@ function addElement(tag, innerHtml) {
 * modify the shown file name to limit the characters within 15 (use ... to replace the middle part of the filename)
 */
 function limitName(filename) {
-    var maxFilenameLength = 15;
+    var maxFilenameLength = 20;
     if (filename.length > maxFilenameLength) {
-        filename = filename.slice(0, 6) + '...' + filename.slice(-6);
+        filename = filename.slice(0, 8) + '....' + filename.slice(-8);
     }
     return filename;
 }
@@ -131,36 +131,61 @@ function limitName(filename) {
 /*
 * create a transparent cover placed on the page
 */
-var cover = (function () {
-    var _cover = document.createElement('div');
-    _cover.id = 'cover';
-    _cover.style.position = 'absolute';
-    _cover.style.zIndex = 1;
-    var width = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth);
-    _cover.style.width = width + 'px';
-    var height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-    _cover.style.height = height + 'px';
-    _cover.style.top = '0px';
-    _cover.style.left = '0px';
-    _cover.style.background = '#333333';
-    _cover.style.filter = 'alpha(opacity=40)';
-    _cover.style.opacity = '0.40';
+var getCover = (function () {
+    var _cover = null;
     var showing = false;
+    var _init = function () {
+        _cover = document.createElement('div');
+        _cover.id = 'cover';
+        _cover.style.position = 'absolute';
+        _cover.style.zIndex = 1;
+        _resize();
+        _cover.style.top = '0px';
+        _cover.style.left = '0px';
+        _cover.style.background = '#333333';
+        _cover.style.filter = 'alpha(opacity=40)';
+        _cover.style.opacity = '0.40';
+        _cover.style.padding = '0px';
+        _cover.style.margin = '0px';
+        _cover.style.border = '0px';
 
-    return {
-        show: function () {
-            if (!showing) {
-                document.body.appendChild(_cover);
-                showing = true;
-            }
-        },
-        hide: function () {
-            if (showing) {
-                document.body.removeChild(_cover);
-                showing = false;
-            }
+        if (window.addEventListener) {
+            window.addEventListener('resize', _resize, false);
+        } else if (window.attachEvent) {
+            window.attachEvent('onresize', _resize);
         }
     };
+
+    var _resize = function () {
+        _cover.style.width = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) + 'px';
+        _cover.style.height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) + 'px';
+    };
+
+    return function () {
+        if (!_cover) {
+            _init();
+        }
+        return {
+            element: function () {
+                return _cover;
+            },
+            show: function () {
+                if (!showing) {
+                    document.body.appendChild(_cover);
+                    showing = true;
+                }
+            },
+            hide: function () {
+                if (showing) {
+                    document.body.removeChild(_cover);
+                    showing = false;
+                }
+            },
+            isShowing: function () {
+                return showing;
+            }
+        };
+    }
 })();
 
 /*
@@ -192,55 +217,70 @@ function Notify(content, options) {
         return;
     }
 
-    var div = document.createElement(id);
+    var div = document.createElement('div');
+    div.id = this.id;
     div.style.position = 'absolute';
     div.style.zIndex = 2;
-    div.style.width = width + 'px';
-    div.style.height = height + 'px';
+    div.style.width = this.width + 'px';
+    div.style.height = this.height + 'px';
 
-    this.scrollHandler(div, width, height, hPos, vPos);
+    this.scrollHandler(div);
 
-    div.style.background = background;
-    div.style.padding = padding;
+    div.style.background = this.background;
+    div.style.padding = this.padding;
 
-    if (document.all) {
-        window.attachEvent('onscroll', this.scrollHandler);
-    } else {
+    if (window.addEventListener) {
         window.addEventListener('scroll', this.scrollHandler, false);
+    } else if (window.attachEvent) {
+        window.attachEvent('onscroll', this.scrollHandler);
     }
 
+    var cover = getCover();
+    var that = this;
+    cover.element().onclick = function () {
+        if (cover.isShowing()) {
+            that.close();
+        }
+    };
+    div.onclick = this.close;
     cover.show();
     div.appendChild(content);
     document.body.appendChild(div);
-    div.onclick = this.close;
 }
 
-Notify.prototype.scrollHandler = function () {
-    var div = this.div;
-    if (this.vPos === 'top') {
-        div.style.top = document.body.scrollTop;
-    } else if (this.vPos === 'center') {
-        div.style.top = (document.body.scrollTop + document.body.clientHeight / 2 - this.height / 2) + 'px';
-    } else {
-        div.style.top = (document.body.scrollTop + document.body.clientHeight - this.height) + 'px';
-    }
+Notify.prototype.scrollHandler = function (div) {
+    var div = div || document.getElementById(this.id);
+    if (!!div) {
+        if (this.vPos === 'top') {
+            div.style.top = document.body.scrollTop;
+        } else if (this.vPos === 'center') {
+            div.style.top = (document.body.scrollTop + document.body.clientHeight / 2 - this.height / 2) + 'px';
+        } else {
+            div.style.top = (document.body.scrollTop + document.body.clientHeight - this.height) + 'px';
+        }
 
-    if (this.hPos === 'left') {
-        div.style.left = document.body.scrollLeft;
-    } else if (this.hPos === 'center') {
-        div.style.left = (document.body.scrollLeft + document.body.clientWidth / 2 - this.width / 2) + 'px';
-    } else {
-        div.style.left = (document.body.scrollLeft + document.body.clientWidth - this.width) + 'px';
+        if (this.hPos === 'left') {
+            div.style.left = document.body.scrollLeft;
+        } else if (this.hPos === 'center') {
+            div.style.left = (document.body.scrollLeft + document.body.clientWidth / 2 - this.width / 2) + 'px';
+        } else {
+            div.style.left = (document.body.scrollLeft + document.body.clientWidth - this.width) + 'px';
+        }
     }
 };
 
 Notify.prototype.close = function () {
-    if (document.all) {
-        window.detachEvent('onscroll', this.scrollHandler);
-    } else {
+    if (window.removeEventListener) {
         window.removeEventListener('scroll', this.scrollHandler, false);
+    } else if (window.detachEvent) {
+        window.detachEvent('onscroll', this.scrollHandler);
     }
 
-    cover.hide();
-    document.body.removeChild(this.div);
+    var div = document.getElementById(this.id);
+    if (!!div) {
+        document.body.removeChild(div);
+        console.log('notify removed');
+    }
+
+    getCover().hide();
 };
