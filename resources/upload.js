@@ -1,3 +1,8 @@
+/******************************* functionalities for upload page **************************/
+
+/*
+* initialize the DOM objects
+*/
 window.onload = function () {
     var maxFileSize = parseInt(document.getElementById("maxFileSize").innerText);
     var form = document.getElementById("form0");
@@ -37,11 +42,17 @@ window.onload = function () {
     };
 };
 
-function upload() {
+/*
+* handler for clicking upload button
+*/
+var upload = function () {
     var uploader = document.getElementById("uploader");
     uploader.click();
-}
+};
 
+/*
+* compose the loading animation
+*/
 function setIntervalChangedText(textControl, textPrefix) {
     var loadingSign = ["·", "·", "·", "·", "·", " "];
     var len = loadingSign.length;
@@ -55,6 +66,9 @@ function setIntervalChangedText(textControl, textPrefix) {
     }, 1000);
 }
 
+/*
+* add an uploaded item to the item list
+*/
 function addFileUploaded(container, obj) {
     var div = addElement('div');
     div.appendChild(addElement('span', '上传文件(24小时有效)：'));
@@ -68,6 +82,33 @@ function addFileUploaded(container, obj) {
     }
 }
 
+
+/*
+* generate QR image and show it as the pop-up window
+*/
+var showQr = (function () {
+    var qrcodedraw = new qrcodelib.qrcodedraw();
+    //triggered errors will throw
+    qrcodedraw.errorBehavior.length = false;
+
+    return function (url) {
+        var qrImg = document.createElement('canvas');
+        qrcodedraw.draw(qrImg, url, function (error, canvas) {
+            if (error) {
+                alert('生成二维码失败');
+                qrImg.style.display = 'none';
+            }
+        });
+        var notify = new Notify(qrImg, { width: qrImg.width, height: qrImg.height });
+    }
+})();
+
+
+/************************************ utilites **********************************/
+
+/*
+* add an element with specified tag and inner HTML
+*/
 function addElement(tag, innerHtml) {
     var ele = document.createElement(tag);
     if (innerHtml) {
@@ -76,6 +117,9 @@ function addElement(tag, innerHtml) {
     return ele;
 }
 
+/*
+* modify the shown file name to limit the characters within 15 (use ... to replace the middle part of the filename)
+*/
 function limitName(filename) {
     var maxFilenameLength = 15;
     if (filename.length > maxFilenameLength) {
@@ -84,19 +128,119 @@ function limitName(filename) {
     return filename;
 }
 
-var showQr = (function () {
-    var qrcodedraw = new qrcodelib.qrcodedraw();
-    //triggered errors will throw
-    qrcodedraw.errorBehavior.length = false;
+/*
+* create a transparent cover placed on the page
+*/
+var cover = (function () {
+    var _cover = document.createElement('div');
+    _cover.id = 'cover';
+    _cover.style.position = 'absolute';
+    _cover.style.zIndex = 1;
+    var width = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth);
+    _cover.style.width = width + 'px';
+    var height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    _cover.style.height = height + 'px';
+    _cover.style.top = '0px';
+    _cover.style.left = '0px';
+    _cover.style.background = '#333333';
+    _cover.style.filter = 'alpha(opacity=40)';
+    _cover.style.opacity = '0.40';
+    var showing = false;
 
-    return function (url) {
-        var qrImg = document.getElementById('qrImg');
-        qrImg.style.display = 'block';
-        qrcodedraw.draw(qrImg, url, function (error, canvas) {
-            if (error) {
-                alert('生成二维码失败');
-                qrImg.style.display = 'none';
+    return {
+        show: function () {
+            if (!showing) {
+                document.body.appendChild(_cover);
+                showing = true;
             }
-        });
-    }
+        },
+        hide: function () {
+            if (showing) {
+                document.body.removeChild(_cover);
+                showing = false;
+            }
+        }
+    };
 })();
+
+/*
+* create a pop-up window for showing notification
+*/
+function Notify(content, options) {
+    // default parameters
+    this.id = 'notify';
+    this.width = 250;
+    this.height = 250;
+    this.vPos = 'center';
+    this.hPos = 'center';
+    this.background = '#FFFFFF';
+    this.padding = '5px';
+
+    // load parameters from options
+    if (typeof options === 'object' && !!options) {
+        this.id = options.id || this.id;
+        this.width = options.width || this.width;
+        this.height = options.height || this.height;
+        this.vPos = options.vPos || this.vPos;
+        this.hPos = options.hPos || this.hPos;
+        this.background = options.background || this.background;
+        this.padding = options.padding || this.padding;
+    }
+
+    if (!!document.getElementById(this.id)) {
+        console.log("notify already exists!");
+        return;
+    }
+
+    var div = document.createElement(id);
+    div.style.position = 'absolute';
+    div.style.zIndex = 2;
+    div.style.width = width + 'px';
+    div.style.height = height + 'px';
+
+    this.scrollHandler(div, width, height, hPos, vPos);
+
+    div.style.background = background;
+    div.style.padding = padding;
+
+    if (document.all) {
+        window.attachEvent('onscroll', this.scrollHandler);
+    } else {
+        window.addEventListener('scroll', this.scrollHandler, false);
+    }
+
+    cover.show();
+    div.appendChild(content);
+    document.body.appendChild(div);
+    div.onclick = this.close;
+}
+
+Notify.prototype.scrollHandler = function () {
+    var div = this.div;
+    if (this.vPos === 'top') {
+        div.style.top = document.body.scrollTop;
+    } else if (this.vPos === 'center') {
+        div.style.top = (document.body.scrollTop + document.body.clientHeight / 2 - this.height / 2) + 'px';
+    } else {
+        div.style.top = (document.body.scrollTop + document.body.clientHeight - this.height) + 'px';
+    }
+
+    if (this.hPos === 'left') {
+        div.style.left = document.body.scrollLeft;
+    } else if (this.hPos === 'center') {
+        div.style.left = (document.body.scrollLeft + document.body.clientWidth / 2 - this.width / 2) + 'px';
+    } else {
+        div.style.left = (document.body.scrollLeft + document.body.clientWidth - this.width) + 'px';
+    }
+};
+
+Notify.prototype.close = function () {
+    if (document.all) {
+        window.detachEvent('onscroll', this.scrollHandler);
+    } else {
+        window.removeEventListener('scroll', this.scrollHandler, false);
+    }
+
+    cover.hide();
+    document.body.removeChild(this.div);
+};

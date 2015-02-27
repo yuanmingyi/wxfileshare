@@ -97,7 +97,7 @@ var getResources = function (path) {
         var filename = req.params.name;
         res.sendFile(filename, options, function (err) {
             if (err) {
-                logger.Error(err);
+                logger.error(err);
                 res.status(err.status).end();
             } else {
                 logger.trace("Sent:" + filename);

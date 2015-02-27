@@ -10,7 +10,6 @@ html(lang="en")
         script(type='text/javascript' src="/resources/upload.js")
     body
         #maxFileSize.hiddenDiv!= maxFileSize
-        canvas#qrImg(onclick="this.style.display='none'")
         form(id="form0", enctype="multipart/form-data", method="post")
             div
                 span#hint 请点击图标上传文件
