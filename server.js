@@ -152,6 +152,8 @@ function composeDownloadHtmlHeaders(fileInfo) {
             contentType = 'application/pdf';
             break;
         case '.exe':
+        case '.zip':
+        case '.apk':
             contentType = 'application/octet-stream';
             break;
         case '.zip':

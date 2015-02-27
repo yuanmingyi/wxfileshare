@@ -13,3 +13,11 @@ div {
 .hiddenDiv {
     display: none;
 }
+
+.qrImg {
+    display: none;
+    position: absolute;
+    width: fit-content;
+    height: fit-content;
+    z-index: 100;
+}

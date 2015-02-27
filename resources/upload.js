@@ -43,12 +43,12 @@ function upload() {
 }
 
 function setIntervalChangedText(textControl, textPrefix) {
-    var loadingSign = [".", ".", ".", ".", ".", " "];
+    var loadingSign = ["·", "·", "·", "·", "·", " "];
     var len = loadingSign.length;
     var pos = len - 1;
     textControl.innerText = textPrefix + loadingSign.join("");
     return setInterval(function () {
-        loadingSign[pos] = ".";
+        loadingSign[pos] = "·";
         pos = (pos - 1 + len) % len;
         loadingSign[pos] = " ";
         textControl.innerText = textPrefix + loadingSign.join("");
@@ -57,11 +57,10 @@ function setIntervalChangedText(textControl, textPrefix) {
 
 function addFileUploaded(container, obj) {
     var div = addElement('div');
-    div.appendChild(addElement('span', '上传文件：'));
-    div.appendChild(addElement('span', obj.filename));
-    div.appendChild(addElement('br'));
-    div.appendChild(addElement('span', '下载URL（24小时有效）：'));
-    div.appendChild(addElement('span', '<a target="_blank" href="' + obj.url + '">' + obj.url + '</a>'));
+    div.appendChild(addElement('span', '上传文件(24小时有效)：'));
+    div.appendChild(addElement('span', '<a target="_blank" href="' + obj.url + '">' + limitName(obj.filename) + '</a>'));
+    div.appendChild(addElement('span', '<a href="#" onclick="showQr(\'' + obj.url + '\')">查看二维码</a>'));
+
     if (container.firstElementChild) {
         container.insertBefore(div, container.firstElementChild);
     } else {
@@ -76,3 +75,28 @@ function addElement(tag, innerHtml) {
     }
     return ele;
 }
+
+function limitName(filename) {
+    var maxFilenameLength = 15;
+    if (filename.length > maxFilenameLength) {
+        filename = filename.slice(0, 6) + '...' + filename.slice(-6);
+    }
+    return filename;
+}
+
+var showQr = (function () {
+    var qrcodedraw = new qrcodelib.qrcodedraw();
+    //triggered errors will throw
+    qrcodedraw.errorBehavior.length = false;
+
+    return function (url) {
+        var qrImg = document.getElementById('qrImg');
+        qrImg.display = 'block';
+        qrcodedraw.draw(qrImg, url, function (error, canvas) {
+            if (error) {
+                alert('生成二维码失败');
+                qrImg.display = 'none';
+            }
+        });
+    }
+})();
