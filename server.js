@@ -27,20 +27,20 @@ app.use(function (err, req, res, next) {
     res.status(500).send('Unexpected error occured!');
 });
 
+// root route, default to upload
+app.get(config.route.root, function (req, res) {
+    res.redirect(config.route.upload);
+});
+
 // wx interface
-app.route("/")
+app.route(config.route.wx)
 .get(function (req, res) {
-    var ret = wxInterface.valid(req);
-    if (ret) {
-        res.send(ret);
-    } else {
-        res.redirect('/upload');
-    }
+    res.send(wxInterface.valid(req));
 })
 .post(wxInterface.postHandler);
 
 // upload file page
-app.route("/upload")
+app.route(config.route.upload + ':userid')
 .get(function (req, res) {
     res.render("upload", { maxFileSize: maxFileSize });
 })
@@ -112,11 +112,11 @@ var getResources = function (path) {
     };
 };
 
-app.get("/resources/qrcode/:name", getResources('qrcode/'));
-app.get("/resources/:name", getResources(''));
+app.get(config.route.resources +"qrcode/:name", getResources('qrcode/'));
+app.get(config.route.resources + ":name", getResources(''));
 
 // download files
-app.get("/download/:hashcode", function (req, res) {
+app.get(config.route.download + ":hashcode", function (req, res) {
     var hashcode = req.params.hashcode;
     sharingFiles.fileInfo(hashcode, function (err, fileinfo) {
         if (!err) {
@@ -134,7 +134,7 @@ app.get("/download/:hashcode", function (req, res) {
 });
 
 function makeDownloadUrl(req, hashcode) {
-    return req.protocol + '://' + req.get('host') + '/download/' + hashcode;
+    return req.protocol + '://' + req.get('host') + config.route.download + hashcode;
 }
 
 function sendSafeResponse(resp, code, obj) {

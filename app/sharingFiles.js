@@ -91,7 +91,7 @@ var sharingFiles = (function () {
     };
 
     obj.sharedFiles = function (userid) {
-
+        return '';
     };
 
     obj.fileInfo = function (hashcode, complete) {

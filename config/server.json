@@ -1,5 +1,12 @@
 {
     "maxFileSize": 10485760,
     "connectionTimeout": 900000,
-    "defaultPort": 1337
+    "defaultPort": 1337,
+    "route": {
+        "root": "/",
+        "wx": "/wx",
+        "upload": "/upload/",
+        "download": "/download/",
+        "resources": "/resources/"
+    }
 }
