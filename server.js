@@ -6,7 +6,7 @@ var format = util.format;
 
 var config = require("./app/config").load("server");
 var log = require("./app/logger");
-var wxCallbackApiTest = require("./app/wxCallbackApiTest");
+var wxInterface = require("./app/wx/wxInterface");
 var sharingFiles = require("./app/sharingFiles");
 
 var app = express();
@@ -27,11 +27,17 @@ app.use(function (err, req, res, next) {
     res.status(500).send('Unexpected error occured!');
 });
 
-// wx verification
-app.get("/", function (req, res) {
-    var ret = wxCallbackApiTest.valid(req);
-    res.send(ret);
-});
+// wx interface
+app.route("/")
+.get(function (req, res) {
+    var ret = wxInterface.valid(req);
+    if (ret) {
+        res.send(ret);
+    } else {
+        res.redirect('/upload');
+    }
+})
+.post(wxInterface.postHandler);
 
 // upload file page
 app.route("/upload")

@@ -1,12 +1,13 @@
 var wxCallbackApiTest = (function () {
-    var config = require("./config").load("wxInterface");
+    var config = require("../config").load("wxInterface");
     var token = config.token;
     var encodingAesKey = config.encodingAesKey;
     var obj = {};
 
-    var logger = require("./logger").logger();
+    var logger = require("../logger").logger();
     var crypto = require('crypto');
 
+    obj.config = config;
     obj.valid = function (req) {
         logger.info("test url: " + req.url);
         var params = req.query;
