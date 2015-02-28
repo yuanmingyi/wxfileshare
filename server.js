@@ -40,7 +40,7 @@ app.route(config.route.wx)
 .post(wxInterface.postHandler);
 
 // upload file page
-app.route(config.route.upload + ':userid')
+app.route(config.route.upload)
 .get(function (req, res) {
     res.render("upload", { maxFileSize: maxFileSize });
 })
