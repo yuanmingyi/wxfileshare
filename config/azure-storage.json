@@ -9,5 +9,8 @@
   "secondaryKey": "7XVm5o7Zxp4lOgAf93z5OPYL10aQ7EujNskuLudPTww03jKJxSMHLWVGnhDtWeKvsXkPSvUFpTBKSuRYLMt3BA==",
   "blobName": "blob",
   "infoBlob": "info",
+  "userUploadsCountTable": "useruploads",
+  "fileInfoTable": "fileinfo",
+  "maxFilesPerUser": 100,
   "expiredPeriod": 24
 }

@@ -132,7 +132,7 @@ app.get(config.route.download + ":hashcode", function (req, res) {
     sharingFiles.fileInfo(hashcode, function (err, fileinfo) {
         if (!err) {
             res.set(composeDownloadHtmlHeaders(fileinfo));
-            var downloadStream = sharingFiles.downloadStream(hashcode, function (err) {
+            var downloadStream = sharingFiles.downloadStream(fileinfo.FileName, hashcode, function (err) {
                 if (!!err) {
                     res.status(500).send("Unable to download the file");
                 }
@@ -167,7 +167,7 @@ function sendSafeResponse(resp, code, obj) {
 }
 
 function composeDownloadHtmlHeaders(fileInfo) {
-    var bound = fileInfo.name.lastIndexOf('.');
+    var bound = fileInfo.FileName.lastIndexOf('.');
     if (bound === -1) {
         bound = fileInfo.name.length;
     }
