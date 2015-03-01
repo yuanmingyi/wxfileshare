@@ -34,10 +34,8 @@ app.get(config.route.root, function (req, res) {
 
 // wx interface
 app.route(config.route.wx)
-.get(function (req, res) {
-    res.send(wxInterface.valid(req));
-})
-.post(wxInterface.postHandler);
+.get(wxInterface.httpGetHandler)
+.post(wxInterface.httpPostHandler);
 
 // upload file page
 app.route(config.route.upload)

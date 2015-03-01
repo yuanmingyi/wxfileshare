@@ -1,11 +1,15 @@
 var wxInterface = (function () {
-    var wxCallbackApiTest = require('./wxCallbackApiTest');
     var sharingFiles = require('../sharingFiles');
     var serverConfig = require('../config').load('server');
+    var config = require("../config").load("wxInterface");
     var logger = require('../logger').logger();
+    
     var util = require('util');
     var xmlParser = require('xml2js').Parser();
-    var config = wxCallbackApiTest.config;
+    var crypto = require('crypto');
+    
+    var token = config.token;
+    var encodingAesKey = config.encodingAesKey;
 
     var makeMessageData = function (toUser, fromUser, createTime, message) {
         var template = '<xml><ToUserName><![CDATA[%s]]></ToUserName><FromUserName><![CDATA[%s]]></FromUserName><CreateTime>%d</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[%s]]></Content></xml>';
@@ -32,25 +36,21 @@ var wxInterface = (function () {
             if (err) {
                 logger.error(util.format('parse XML data failed: %s', err));
             } else {
-                if (result['ToUserName'] !== config.wxid) {
-                    logger.error(util.format('not expected target user name: %s', result['ToUserName']));
-                } else {
-                    var userid = result['FromUserName'];
-                    if (result['MsgType'] === 'text') {
-                        var text = result['Content'];
-                        if (text) {
-                            text = text.toLowerCase();
-                            var message = '';
-                            if (text.indexOf('u') === 0) {
-                                // request for upload a file, return the URL of uploading page
-                                message = '请点击链接上传文件: ' + req.protocol + '://' + req.get('host') + serverConfig.route.upload + userid;
-                            } else if (text.indexOf('s') === 0) {
-                                // request for showing files that already uploaded, return all the urls of the uploaded files
-                                message = '已上传文件: ' + sharingFiles.sharedFiles(userid);
-                            }
-
-                            ret = makeMessageData(userid, config.wxid, new Date().getTime(), message);
+                var userid = result['FromUserName'];
+                var myid = result['ToUserName'];
+                if (result['MsgType'] === 'text') {
+                var text = result['Content'];
+                    if (text) {
+                        text = text.toLowerCase();
+                        var message = '';
+                        if (text.indexOf('u') === 0) {
+                            // request for upload a file, return the URL of uploading page
+                            message = '请点击链接上传文件: ' + req.protocol + '://' + req.get('host') + serverConfig.route.upload + userid;
+                        } else if (text.indexOf('s') === 0) {
+                            // request for showing files that already uploaded, return all the urls of the uploaded files
+                            message = '已上传文件: ' + sharingFiles.sharedFiles(userid);
                         }
+                        ret = makeMessageData(userid, myid, new Date().getTime() / 1000, message);
                     }
                 }
             }
@@ -59,12 +59,43 @@ var wxInterface = (function () {
         });
     };
 
-    var interface = {};
-    interface.postHandler = function (req, res) {
-        if (req.method !== 'POST') {
-            logger.error('only process POST request');
-        }
+    var checkSignature = function (params) {
+        var signature = params["signature"];
+        var timestamp = params["timestamp"];
+        var nonce = params["nonce"];
 
+        var tmpArr = [token, timestamp, nonce];
+        // use SORT_STRING rule
+        tmpArr.sort();
+        logger.trace("sorted [token, timestamp, nonce] array:");
+        logger.trace(tmpArr[0]);
+        logger.trace(tmpArr[1]);
+        logger.trace(tmpArr[2]);
+
+        var tmpStr = tmpArr.join("");
+        logger.trace("joined string: " + tmpStr);
+
+        var shasum = crypto.createHash('sha1');
+        shasum.update(tmpStr);
+        tmpStr = shasum.digest('hex');
+        logger.trace("validate str: " + tmpStr);
+        logger.trace("signature: " + signature);
+
+        if (tmpStr == signature) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+    
+    var interface = {};
+    interface.httpPostHandler = function (req, res) {
+        if (!checkSignature(req.query)) {
+            logger.info('Invalid Signature. Not a weixin request');
+            res.status(403).send('Bad request');
+            return;
+        }
+        
         var data = '';
         req.on('data', function (chunk) {
             data += chunk;
@@ -83,7 +114,16 @@ var wxInterface = (function () {
         });
     };
 
-    interface.valid = wxCallbackApiTest.valid;
+    interface.httpGetHandler = function (req, res) {
+        var params = req.query;
+        var ret = '';
+        if (checkSignature(params)) {
+            logger.info("signature check successfully");
+            ret = params["echostr"];
+        }
+
+        res.send(ret);
+    };
 
     return interface;
 })();
