@@ -3,11 +3,11 @@ var wxInterface = (function () {
     var serverConfig = require('../config').load('server');
     var config = require("../config").load("wxInterface");
     var logger = require('../logger').logger();
-    
+
     var util = require('util');
     var xmlParser = require('xml2js').Parser();
     var crypto = require('crypto');
-    
+
     var token = config.token;
     var encodingAesKey = config.encodingAesKey;
 
@@ -30,28 +30,42 @@ var wxInterface = (function () {
         });
     };
 
+    var helpDoc = '请发送upload或者u上传文件，发送show或者s获得文件下载链接';
     var processPostData = function (req, data, onComplete) {
         xml2Json(data, function (err, result) {
-            var ret = '';
+            var ret = 'success';
             if (err) {
                 logger.error(util.format('parse XML data failed: %s', err));
             } else {
                 var userid = result['FromUserName'];
                 var myid = result['ToUserName'];
+                var message = '';
                 if (result['MsgType'] === 'text') {
-                var text = result['Content'];
+                    var text = result['Content'];
                     if (text) {
                         text = text.toLowerCase();
-                        var message = '';
                         if (text.indexOf('u') === 0) {
                             // request for upload a file, return the URL of uploading page
                             message = '请点击链接上传文件: ' + req.protocol + '://' + req.get('host') + serverConfig.route.upload + userid;
                         } else if (text.indexOf('s') === 0) {
                             // request for showing files that already uploaded, return all the urls of the uploaded files
-                            message = '已上传文件: ' + sharingFiles.sharedFiles(userid);
+                            message = '已上传文件（开发中）: ' + sharingFiles.sharedFiles(userid);
+                        } else {
+                            message = helpDoc;
                         }
-                        ret = makeMessageData(userid, myid, new Date().getTime() / 1000, message);
                     }
+                } else if (result['MsgType'] === 'event') {
+                    var event = result['Event'];
+                    if (event === 'subscribe') {
+                        // TODO: add user number
+                        message = '欢迎使用文件共享助手。' + helpDoc;
+                    } else if (event === 'unsubscribe') {
+                        // TODO: reduce user number
+                    }
+                }
+
+                if (message !== '') {
+                    ret = makeMessageData(userid, myid, new Date().getTime() / 1000, message);
                 }
             }
 
@@ -87,7 +101,7 @@ var wxInterface = (function () {
             return false;
         }
     };
-    
+
     var interface = {};
     interface.httpPostHandler = function (req, res) {
         if (!checkSignature(req.query)) {
@@ -95,7 +109,7 @@ var wxInterface = (function () {
             res.status(403).send('Bad request');
             return;
         }
-        
+
         var data = '';
         req.on('data', function (chunk) {
             data += chunk;
@@ -134,7 +148,7 @@ var wxInterface = (function () {
         }
         return userid;
     };
-    
+
     return interface;
 })();
 
