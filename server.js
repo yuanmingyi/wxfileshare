@@ -126,7 +126,12 @@ app.get(config.route.download + ":hashcode", function (req, res) {
                     res.status(500).send("Unable to download the file");
                 }
             });
-            downloadStream.pipe(res);
+            try {
+                downloadStream.pipe(res);
+            }
+            catch (ex) {
+                log.error(util.format('Exception: %s', ex));
+            }
         } else {
             res.status(500).send("Unable to fetch the file information");
         }
