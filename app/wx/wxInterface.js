@@ -27,7 +27,7 @@ var wxInterface = (function () {
     };
 
     var processPostData = function (req, data, onComplete) {
-        xml2Json(data, function (err, r esult) {
+        xml2Json(data, function (err, result) {
             var ret = '';
             if (err) {
                 logger.error(util.format('parse XML data failed: %s', err));
@@ -71,7 +71,7 @@ var wxInterface = (function () {
         });
 
         req.on('end', function () {
-            logger.trace(util.format('req url: %s', req.originUrl));
+            logger.trace(util.format('req url: %s', req.originalUrl));
             logger.trace(util.format('req body:\n%s', data));
             processPostData(req, data, function (result) {
                 res.status(200).send(result);
