@@ -1,4 +1,4 @@
-// Jade
+//-- Jade
 doctype html
 html(lang="en")
     head
@@ -10,7 +10,10 @@ html(lang="en")
         script(type='text/javascript' src="/resources/upload.js")
     body
         #maxFileSize.hiddenDiv!= maxFileSize
+        #uid.hiddenDiv!= userId
         form(id="form0", enctype="multipart/form-data", method="post")
+            div
+                input(name="uid", type="hidden")
             div
                 span#hint 请点击图标上传文件
                 span#loadingText
@@ -18,6 +21,4 @@ html(lang="en")
                 img(id="uploadButton", alt="click to upload a file", src="/resources/upload-icon.png", onclick="upload()")
             div
                 input(name="file", id="uploader", type="file" hidden="hidden")
-            //-div
-                input(type="submit", onclick="submit" value="confirm upload")
         #uploadContainer

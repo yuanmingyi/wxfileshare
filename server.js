@@ -40,15 +40,22 @@ app.route(config.route.wx)
 // upload file page
 app.route(config.route.upload)
 .get(function (req, res) {
-    res.render("upload", { maxFileSize: maxFileSize });
+    res.render("upload", { maxFileSize: maxFileSize, userId: '' });
 })
 .post(function (req, res) {
     var busboy = new Busboy({ headers: req.headers, limits: { fileSize: maxFileSize, files: 1} });
     var successful = true;
+    var userid = '';
     var uploadStream;
+    busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated) {
+        logger.trace(util.format('field get: [name] %s [value] %s', fieldname, val));
+        if (fieldname === 'uid') {
+            userid = wxInterface.verifyUserId(val);
+        }
+    });
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
         logger.trace("busboy start file upload");
-        sharingFiles.uploadStream("", filename, function (result, hashcode, stream) {
+        sharingFiles.uploadStream(userid, filename, function (result, hashcode, stream) {
             successful = result;
             logger.trace("successful: " + successful);
             if (successful) {
@@ -85,6 +92,12 @@ app.route(config.route.upload)
         logger.warn("file uploaded is truncated");
     });
     req.pipe(busboy);
+});
+
+// upload with user open id
+app.get(config.route.upload + ':userid', function (req, res) {
+    var userid = wxInterface.verifyUserId(req.params.userid);
+    res.render("upload", { maxFileSize: maxFileSize, userId: userid });
 });
 
 // fetch the resources files

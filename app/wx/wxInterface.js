@@ -125,6 +125,16 @@ var wxInterface = (function () {
         res.send(ret);
     };
 
+    // verify if the given userid is valid open id, return userid if true, otherwise empty string
+    interface.verifyUserId = function (userid) {
+        if (/[^a-zA-Z0-9_]/.test(userid)) {
+            // illegal user open id
+            logger.trace(util.format('%s is an illegal open id', userid));
+            return '';
+        }
+        return userid;
+    };
+    
     return interface;
 })();
 

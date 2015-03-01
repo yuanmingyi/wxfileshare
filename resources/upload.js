@@ -4,7 +4,7 @@
 * initialize the DOM objects
 */
 window.onload = function () {
-    var maxFileSize = parseInt(document.getElementById("maxFileSize").innerText);
+    var maxFileSize = parseInt(document.getElementById("maxFileSize").textContent);
     var form = document.getElementById("form0");
     var uploader = document.getElementById("uploader");
     uploader.onchange = function (ev) {
@@ -19,6 +19,7 @@ window.onload = function () {
             var hintLabel = document.getElementById("hint");
             var uploadContainer = document.getElementById("uploadContainer");
             var loadingText = document.getElementById("loadingText");
+            var uid = document.getElementById("uid");
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "/upload", true);
             xhr.onreadystatechange = function () {
@@ -35,6 +36,7 @@ window.onload = function () {
                     form.reset();
                 }
             };
+            form['uid'].value = uid.textContent;
             xhr.send(new FormData(form));
             uploadButton.onclick = "";
             var timer = setIntervalChangedText(hintLabel, "文件上传中，请耐心等待");
@@ -73,7 +75,7 @@ function addFileUploaded(container, obj) {
     var div = addElement('div');
     div.appendChild(addElement('span', '上传文件(24小时有效)：'));
     div.appendChild(addElement('span', '<a target="_blank" href="' + obj.url + '">' + limitName(obj.filename) + '</a>'));
-    div.appendChild(addElement('span', '&nbsp<a href="#" onclick="showQr(\'' + obj.url + '\')">查看二维码</a>'));
+    div.appendChild(addElement('span', '&nbsp<a href="javascript:showQr(\'' + obj.url + '\')">查看二维码</a>'));
 
     if (container.firstElementChild) {
         container.insertBefore(div, container.firstElementChild);
