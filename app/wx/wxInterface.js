@@ -3,6 +3,7 @@ var wxInterface = (function () {
     var serverConfig = require('../config').load('server');
     var config = require("../config").load("wxInterface");
     var logger = require('../logger').logger();
+    var utilities = require('../utilities');
 
     var util = require('util');
     var xmlParser = require('xml2js').Parser();
@@ -10,6 +11,7 @@ var wxInterface = (function () {
 
     var token = config.token;
     var encodingAesKey = config.encodingAesKey;
+    var lastUploadsTimeSpan = 3600000;
 
     var makeMessageData = function (toUser, fromUser, createTime, message) {
         var template = '<xml><ToUserName><![CDATA[%s]]></ToUserName><FromUserName><![CDATA[%s]]></FromUserName><CreateTime>%d</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[%s]]></Content></xml>';
@@ -49,7 +51,21 @@ var wxInterface = (function () {
                             message = '请点击链接上传文件: ' + req.protocol + '://' + req.get('host') + serverConfig.route.upload + userid;
                         } else if (text.indexOf('s') === 0) {
                             // request for showing files that already uploaded, return all the urls of the uploaded files
-                            message = '已上传文件（开发中）: ' + sharingFiles.sharedFiles(userid);
+                            sharingFiles.sharedFiles(userid, lastUploadsTimeSpan, function (files) {
+                                message = '已上传文件:';
+                                files.sort(function (f1, f2) {
+                                    return f2.createDate - f1.createDate;
+                                });
+                                var length = files.length < config.showFileCount ? files.length : config.showFileCount;
+                                for (var i = 0; i < length; i++) {
+                                    message += '\n' + files[i].fileName + ' ' + utilities.makeDownloadUrl(req, files[i].hashCode);
+                                }
+                                onComplete(makeMessageData(userid, myid, new Date().getTime() / 1000, message));
+                            });
+                            return;
+                        } else if (text.indexOf('a') === 0) {
+                            // request for showing all the files uploaded by the current user. return a url linking to a page with the file list.
+                            message = '所有上传文件：' + sharingFiles.fileListPage(userid);
                         } else {
                             message = helpDoc;
                         }
