@@ -114,8 +114,16 @@ app.get(config.route.upload + ':userid', function (req, res) {
 });
 
 // fetch shared files
-app.get(config.route.show + ':userid', function (req, res) {
-    res.send("ok");
+app.get(config.route.show + ':code', function (req, res) {
+    var code = req.params.code;
+    var userid = sharingFiles.parseFileListPageCode(code);
+    if (userid === '') {
+        res.status(403).send('Bad request');
+    } else {
+        sharingFiles.sharedFiles(userid, function (fileList) {
+            res.render("showupload", { fileList: fileList });
+        });
+    }
 });
 
 // download files

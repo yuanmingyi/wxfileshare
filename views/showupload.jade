@@ -1,0 +1,27 @@
+//-- Jade
+doctype html
+html(lang="en")
+    head
+        meta(charset="utf-8") 
+        link(type="text/css", rel="stylesheet", href="/resources/upload.css")
+        title upload files
+    body
+        #uploadContainer
+            table
+                th
+                    td
+                        span=序号
+                    td
+                        span=文件名
+                    td
+                        span=创建时间
+                each val, index in fileList
+                    tr
+                        td
+                            span=index+1
+                        td
+                            span
+                                a(href=val.filePath)= val.fileName
+                        td
+                            span=val.createDate
+                            

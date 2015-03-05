@@ -51,7 +51,7 @@ var wxInterface = (function () {
                             message = '请点击链接上传文件: ' + req.protocol + '://' + req.get('host') + serverConfig.route.upload + userid;
                         } else if (text.indexOf('s') === 0) {
                             // request for showing files that already uploaded, return all the urls of the uploaded files
-                            sharingFiles.sharedFiles(userid, lastUploadsTimeSpan, function (files) {
+                            sharingFiles.sharedFiles(userid, function (files) {
                                 message = '已上传文件:';
                                 files.sort(function (f1, f2) {
                                     return f2.createDate - f1.createDate;
@@ -65,7 +65,7 @@ var wxInterface = (function () {
                             return;
                         } else if (text.indexOf('a') === 0) {
                             // request for showing all the files uploaded by the current user. return a url linking to a page with the file list.
-                            message = '所有上传文件：' + sharingFiles.fileListPage(userid);
+                            message = '所有上传文件：' + utilities.makeShowUrl(sharingFiles.fileListPageCode(userid));
                         } else {
                             message = helpDoc;
                         }

@@ -9,6 +9,10 @@ obj.makeDownloadUrl = function (req, hashcode) {
     return req.protocol + '://' + req.get('host') + config.route.download + hashcode;
 };
 
+obj.makeShowUrl = function (req, code) {
+    return req.protocol + '://' + req.get('host') + config.route.show + code;
+};
+
 obj.sendSafeResponse = function (resp, code, obj) {
     if (!resp.headersSent) {
         var msg = "response error";
@@ -95,6 +99,23 @@ obj.getResources = function (path) {
             }
         });
     };
+};
+
+// syncronizedly run the func until testComplete return true or timeout
+// the timeout has millisencond as the unit
+obj.syncRun = function (timeout, testComplete, timeoutCallback, func) {
+    var slice = Array.prototype.slice;
+    var args = slice.apply(arguments, [4]);
+    var startTime = new Date().getTime();
+    func.apply(null, args);
+    logger.info("wait the func to finish...");
+    while (!testComplete() && (new Date()).getTime() - timeout < startTime)
+    {
+    }
+
+    if (!testComplete()) {
+        timeoutCallback();
+    }
 };
 
 module.exports = obj;

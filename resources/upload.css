@@ -22,3 +22,7 @@ div {
     height: fit-content;
     z-index: 100;
 }
+
+table {
+    text-align: center;
+}
