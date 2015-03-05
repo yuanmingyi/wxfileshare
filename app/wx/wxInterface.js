@@ -31,7 +31,7 @@ var wxInterface = (function () {
         });
     };
 
-    var helpDoc = '请发送upload或者u上传文件，发送show或者s获得文件下载链接';
+    var helpDoc = '请发送upload或者u上传文件，发送show或者s获得文件下载链接，发送all或者a查看已上传的所有文件';
     var processPostData = function (req, data, onComplete) {
         xml2Json(data, function (err, result) {
             var ret = 'success';
