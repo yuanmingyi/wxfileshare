@@ -13,7 +13,7 @@ var app = express();
 var logger = log.logger();
 
 var maxFileSize = parseInt(config.maxFileSize);
-var connectionTmeout = parseInt(config.connectionTimeout);
+var connectionTmeout = parseInt(config.connectionTimeout);      // seconds
 
 var port = process.env.port || parseInt(config.defaultPort);
 
@@ -47,9 +47,9 @@ app.route(config.route.upload)
 })
 .post(function (req, res) {
     var busboy = new Busboy({ headers: req.headers, limits: { fileSize: maxFileSize, files: 1} });
-    var successful = false;
     var userid = '';
-    var uploadStream;
+    var fileChunk = [];
+    var length = 0;
 
     busboy.on('field', function (fieldname, val, fieldnameTruncated, valTruncated) {
         logger.trace(util.format('field get: [name] %s [value] %s', fieldname, val));
@@ -59,51 +59,41 @@ app.route(config.route.upload)
     });
 
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
-        logger.trace("busboy start file upload");
-        try {
-            sharingFiles.uploadStream(userid, filename, function (result, hashcode, stream) {
-                successful = result;
-                logger.trace("successful: " + successful);
-                if (successful) {
-                    logger.trace("upload stream created");
-                    var downloadUrl = utilities.makeDownloadUrl(req, hashcode);
-                    uploadStream = stream;
-                    uploadStream.on('finish', function () {
-                        logger.trace("upload stream finished");
-                        utilities.sendSafeResponse(res, 200, { filename: filename, url: downloadUrl, truncated: file.truncated });
-                    });
-                    file.pipe(uploadStream);
-                } else {
-                    file.resume();
-                }
-            });
-        } catch (exception) {
-            logger.error(util.format('exception:\n%s', util.inspect(exception)));
-            return;
-        }
+        file.on('data', function (chunk) {
+            fileChunk.push(chunk);
+            length += chunk.length;
+        });
+        file.on('end', function () {
+            logger.trace(util.format('File [%s] Finished', fieldname));
+            logger.trace("busboy start file upload");
+            var fileData = Buffer.concat(fileChunk, length);
 
-        setTimeout(function () {
-            logger.trace("upload stream timeout. successful: " + successful);
-            req.unpipe(busboy);
-            busboy.end();
-            utilities.sendSafeResponse(res, 500, "Time out");
-            if (successful) {
-                file.unpipe(uploadStream);
-                uploadStream.end();
+            try {
+                sharingFiles.uploadData(userid, filename, fileData, connectionTmeout, function (result, hashcode) {
+                    if (result) {
+                        logger.trace("File %s (%d bytes) upload succeeded", filename, fileData.length);
+                        var downloadUrl = utilities.makeDownloadUrl(req, hashcode);
+                        utilities.sendSafeResponse(res, 200, { filename: filename, url: downloadUrl, truncated: file.truncated });
+                    } else {
+                        logger.info("File %s upload failed", filename);
+                        utilities.sendSafeResponse(res, 500, "Upload Failed");
+                    }
+                });
+            } catch (exception) {
+                logger.error(util.format('exception:\n%s', util.inspect(exception)));
+                utilities.sendSafeResponse(res, 500, util.format("Upload Failed: %s", exception.message));
             }
-        }, connectionTmeout);
+        });
     });
 
     busboy.on('finish', function () {
         logger.trace("busboy finished");
-        if (!successful) {
-            utilities.sendSafeResponse(res, 500, "Upload failed");
-        }
     });
 
     busboy.on('error', function (err) {
         logger.error(util.format("error on busboy: %s", util.inspect(err)));
     });
+
     req.pipe(busboy);
 });
 
@@ -118,22 +108,26 @@ app.get(config.route.show + ':code', function (req, res) {
     var code = req.params.code;
     var userid = sharingFiles.parseFileListPageCode(code);
     if (userid === '') {
-        res.status(403).send('Bad request');
-    } else {
-        sharingFiles.sharedFiles(userid, function (fileList) {
-            res.render("showupload", { fileList: fileList });
-        });
+        // return res.status(403).send('Bad request');
     }
+    sharingFiles.sharedFiles(userid, function (fileList) {
+        fileList.forEach(function (file) {
+            file.url = utilities.makeDownloadUrl(req, file.hashCode);
+            logger.trace('file info:\n%s', util.inspect(file));
+        });
+        res.render("showupload", { fileList: fileList });
+    });
 });
 
 // download files
 app.get(config.route.download + ":hashcode", function (req, res) {
     var hashcode = req.params.hashcode;
-    sharingFiles.fileInfo(hashcode, function (err, fileinfo) {
-        if (!err) {
+    sharingFiles.fileInfo(hashcode, function (result, fileinfo) {
+        if (result) {
+            // logger.trace(util.format('fileinfo:\n%s', util.inspect(fileinfo)));
             res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
-            var downloadStream = sharingFiles.downloadStream(fileinfo.path, hashcode, function (err) {
-                if (!!err) {
+            var downloadStream = sharingFiles.downloadStream(fileinfo.path, hashcode, function (result) {
+                if (!result) {
                     res.status(500).send("Unable to download the file");
                 }
             });

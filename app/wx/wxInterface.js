@@ -1,6 +1,5 @@
 var wxInterface = (function () {
     var sharingFiles = require('../sharingFiles');
-    var serverConfig = require('../config').load('server');
     var config = require("../config").load("wxInterface");
     var logger = require('../logger').logger();
     var utilities = require('../utilities');
@@ -48,7 +47,7 @@ var wxInterface = (function () {
                         text = text.toLowerCase();
                         if (text.indexOf('u') === 0) {
                             // request for upload a file, return the URL of uploading page
-                            message = '请点击链接上传文件: ' + req.protocol + '://' + req.get('host') + serverConfig.route.upload + userid;
+                            message = '请点击链接上传文件: ' + utilities.makeUploadUrl(req, userid);
                         } else if (text.indexOf('s') === 0) {
                             // request for showing files that already uploaded, return all the urls of the uploaded files
                             sharingFiles.sharedFiles(userid, function (files) {
@@ -65,7 +64,7 @@ var wxInterface = (function () {
                             return;
                         } else if (text.indexOf('a') === 0) {
                             // request for showing all the files uploaded by the current user. return a url linking to a page with the file list.
-                            message = '所有上传文件：' + utilities.makeShowUrl(sharingFiles.fileListPageCode(userid));
+                            message = '所有上传文件：' + utilities.makeShowUrl(req, sharingFiles.fileListPageCode(userid));
                         } else {
                             message = helpDoc;
                         }

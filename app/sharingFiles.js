@@ -8,12 +8,6 @@ var sharingFiles = (function () {
     var blobSvc = azure.createBlobService(config.account, config.primaryKey, config.endPoints.blob);
     var tableSvc = azure.createTableService(config.account, config.primaryKey, config.endPoints.table);
 
-    tableSvc.createTableIfNotExists(config.userUploadsCountTable, function (err, result) {
-        if (err) {
-            logger.error(util.format('create user upload count table failed\n%s', util.inspect(err)));
-        }
-    });
-
     tableSvc.createTableIfNotExists(config.fileInfoTable, function (err, result) {
         if (err) {
             logger.error(util.format('create user file info table failed\n%s', util.inspect(err)));
@@ -54,115 +48,97 @@ var sharingFiles = (function () {
         });
     };
 
-    var createFileInfoEntity = function (hashcode, path, filename, timestamp) {
+    var createFileInfoEntity = function (hashcode, path, filename, date) {
+        var entGen = azure.TableUtilities.entityGenerator;
         return {
-            PartitionKey: { '_': generatePartitionKey(hashcode), '$': 'Edm.String' },
-            RowKey: { '_': hashcode, '$': 'Edm.String' },
-            FilePath: { '_': path, '$': 'Edm.String' },
-            FileName: { '_': filename, '$': 'Edm.String' },
-            CreateDate: { '_': timestamp, '$': 'Edm.String' }
+            PartitionKey: entGen.String(generatePartitionKey(hashcode)),
+            RowKey: entGen.String(hashcode),
+            FilePath: entGen.String(path),
+            FileName: entGen.String(filename),
+            CreateDate: entGen.DateTime(date)
         };
     };
 
     var entities2filesInfo = function (entities) {
         var filesInfo = [];
-        for (var entity in entities) {
+        entities.forEach(function (entity) {
             filesInfo.push({
                 hashCode: entity.RowKey['_'],
                 path: entity.FilePath['_'],
                 fileName: entity.FileName['_'],
-                createDate: entity.CreateDate['_']
+                createDate: new Date(entity.CreateDate['_'])
             });
-        }
-
+        });
         return filesInfo;
     };
 
     var obj = {};
 
     // timeout is optional and the unit is second
-    obj.uploadStream = function (userid, originname, timeout, completeCallback) {
-        logger.trace('>>> start sharingFiles.uploadStream');
+    obj.uploadData = function (userid, originname, fileData, timeout, completeCallback) {
+        logger.trace('>>> start sharingFiles.uploadData');
 
-        var timestamp = new Date().getTime();
-        var tmpStr = originname + userid + timestamp;
+        var date = new Date();
+        var tmpStr = originname + userid + date.getTime();
         var shasum = crypto.createHash("sha1");
         shasum.update(tmpStr);
         var hashcode = shasum.digest('hex');
         var path = makePathFromUserId(userid);
-        var userFilesCount = 0;
 
         if (typeof timeout === 'function') {
             completeCallback = timeout;
             timeout = 120;       // seconds
         }
 
+        var timeoutInMs = timeout * 1000;   // milliseconds
+
         var tableFinished = false;
         var blobFinished = false;
-        var writableStream = null;
         var entityInserted = false;
         var blobCreated = false;
-        var entity = createFileInfoEntity(hashcode, path, originname, timestamp);
+        var entity = createFileInfoEntity(hashcode, path, originname, date);
 
-        utilities.syncRun(timeout * 1000, function () {
-            // testComplete
-            return tableFinished && blobFinished;
-        }, function () {
-            // timeoutCallback
-            logger.warn('running timeout');
-            if (entityInserted) {
-                deleteTableEntity(config.fileInfoTable, entity);
+        var startTime = new Date();
+        tableSvc.insertEntity(config.fileInfoTable, entity, { timeoutIntervalInMs: timeoutInMs }, function (err, result) {
+            if (err) {
+                logger.error(util.format("insert entity failed!\n%s", util.inspect(err)));
+                completeCallback(false);
+                return;
             }
-            if (blobCreated && writableStream) {
-                writableStream.end();
-                deleteBlob(path, hashcode);
-            }
-        }, function () {
-            // func
-            tableSvc.insertEntity(config.fileInfoTable, entity, { timeoutIntervalInMs: timeout * 1000 }, function (err, result) {
-                if (err) {
-                    logger.error(util.format("insert entity failed!\n%s", util.inspect(err)));
-                } else {
-                    logger.trace(util.format('entity inserted for hashcode: %s', hashcode));
-                    entityInserted = true;
-                }
-                tableFinished = true;
-            });
+            logger.trace(util.format('entity inserted for hashcode: %s', hashcode));
 
-            blobSvc.createContainerIfNotExists(path, { publicAccessLevel: 'blob', timeoutIntervalInMs: timeout * 100 }, function (err, result, response) {
+            var passedTime = new Date() - startTime;
+            blobSvc.createContainerIfNotExists(path, { publicAccessLevel: 'blob', timeoutIntervalInMs: timeoutInMs - passedTime }, function (err, result, response) {
                 if (err) {
                     logger.error("create container failed!\n" + util.inspect(err));
-                    blobFinished = true;
+                    deleteTableEntity(config.fileInfoTable, entity);
+                    completeCallback(false);
                     return;
                 }
 
                 logger.trace(util.format('container %s is created (existing)', path));
-                writableStream = blobSvc.createWriteStreamToBlockBlob(path, hashcode, { timeoutIntervalInMs: timeout * 900 }, function (err, result) {
+                passedTime = new Date() - startTime;
+                blobSvc.createBlockBlobFromText(path, hashcode, fileData, { timeoutIntervalInMs: timeoutInMs - passedTime }, function (err, result) {
                     if (err) {
                         logger.error(util.format("create file blob failed!\nhashcode:%s\nerror:%s", hashcode, util.inspect(err)));
-                        blobFinished = true;
+                        deleteTableEntity(config.fileInfoTable, entity);
+                        completeCallback(false);
                         return;
                     }
-                    logger.trace(util.format('writableStream is created for path: %s and hashcode: %s', path, hashcode));
-                    blobCreated = true;
-                    blobFinished = true;
+
+                    logger.trace(util.format('file blob is created for path: %s and hashcode: %s', path, hashcode));
+                    completeCallback(true, hashcode);
                 });
             });
         });
-
-        if (entityInserted && blobCreated) {
-            completeCallback(true, hashcode, writableStream);
-        } else {
-            completeCallback(false);
-        }
     };
 
     obj.sharedFiles = function (userid, timeout, callback) {
         logger.trace('>>> start sharingFiles.sharedFiles');
 
         var path = makePathFromUserId(userid);
-        var infoTableQuery = new TableQuery()
-            .where(TableQuery.stringFilter('FilePath', QueryComparisons.EQUAL, path));
+        logger.trace(util.format('userid: %s\n path: %s', userid, path));
+        var infoTableQuery = new azure.TableQuery().where(azure.TableQuery.stringFilter('FilePath', azure.TableUtilities.QueryComparisons.EQUAL, path));
 
         if (typeof timeout === 'function') {
             callback = timeout;
@@ -175,16 +151,6 @@ var sharingFiles = (function () {
                 callback([]);
             } else {
                 logger.trace(util.format('file info for userid %s are queried', userid));
-                callback(entities2filesInfo(result.entries));
-            }
-        });
-
-        blobSvc.listBlobsSegmented(path, null, { timeoutIntervalInMs: tiemout * 1000 }, function (err, result, res) {
-            if (err) {
-                logger.error(util.format('list blobs in container %s failed', path));
-                callback([]);
-            } else {
-                logger.info(util.format('list blobs in container %s succeeded', path));
                 callback(entities2filesInfo(result.entries));
             }
         });
@@ -205,16 +171,16 @@ var sharingFiles = (function () {
                 return;
             }
 
-            logger.trace(util.format('file info for hashcode %s is retrieved: %s', hashcode, util.inspect(entity)));
-            complete(true, entities2filesInfo(entity));
+            logger.trace(util.format('file info for hashcode %s is retrieved:\n%s', hashcode, util.inspect(entity)));
+            complete(true, entities2filesInfo([entity])[0]);
         });
     };
 
-    obj.downloadStream = function (path, hashcode, timeout, errorOrResult) {
+    obj.downloadStream = function (path, hashcode, timeout, complete) {
         logger.trace('>>> start sharingFiles.downloadStream');
 
         if (typeof timeout === 'function' || typeof timeout === 'undefined') {
-            errorOrResult = timeout;
+            complete = timeout;
             timeout = 120;  // seconds
         }
 
@@ -224,18 +190,18 @@ var sharingFiles = (function () {
             }
 
             logger.trace('read stream is created');
-            if (errorOrResult) {
-                errorOrResult(err, result);
+            if (complete) {
+                complete(err ? false : true);
             }
         });
     };
 
     obj.fileListPageCode = function (userid) {
-        return encodeURIComponent(userid);
+        return encodeURIComponent('u' + userid);
     };
 
     obj.parseFileListPageCode = function (code) {
-        return decodeURIComponent(code);
+        return decodeURIComponent(code).slice(1);
     };
 
     obj.setLogger = function (newLogger) {

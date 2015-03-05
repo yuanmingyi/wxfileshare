@@ -4,24 +4,24 @@ html(lang="en")
     head
         meta(charset="utf-8") 
         link(type="text/css", rel="stylesheet", href="/resources/upload.css")
-        title upload files
+        title shared files
     body
         #uploadContainer
             table
-                th
+                tr
                     td
-                        span=序号
+                        span 序号
                     td
-                        span=文件名
+                        span 文件名
                     td
-                        span=创建时间
+                        span 创建时间
                 each val, index in fileList
                     tr
                         td
                             span=index+1
                         td
                             span
-                                a(href=val.filePath)= val.fileName
+                                a(href= val.url)= val.fileName
                         td
-                            span=val.createDate
+                            span=val.createDate.toISOString()
                             

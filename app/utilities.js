@@ -1,5 +1,4 @@
 var util = require('util');
-
 var config = require("./config").load("server");
 var logger = require("./logger").logger();
 
@@ -12,6 +11,10 @@ obj.makeDownloadUrl = function (req, hashcode) {
 obj.makeShowUrl = function (req, code) {
     return req.protocol + '://' + req.get('host') + config.route.show + code;
 };
+
+obj.makeUploadUrl = function (req, userid) {
+    return req.protocol + '://' + req.get('host') + config.route.upload + userid;
+}
 
 obj.sendSafeResponse = function (resp, code, obj) {
     if (!resp.headersSent) {
@@ -99,23 +102,6 @@ obj.getResources = function (path) {
             }
         });
     };
-};
-
-// syncronizedly run the func until testComplete return true or timeout
-// the timeout has millisencond as the unit
-obj.syncRun = function (timeout, testComplete, timeoutCallback, func) {
-    var slice = Array.prototype.slice;
-    var args = slice.apply(arguments, [4]);
-    var startTime = new Date().getTime();
-    func.apply(null, args);
-    logger.info("wait the func to finish...");
-    while (!testComplete() && (new Date()).getTime() - timeout < startTime)
-    {
-    }
-
-    if (!testComplete()) {
-        timeoutCallback();
-    }
 };
 
 module.exports = obj;
