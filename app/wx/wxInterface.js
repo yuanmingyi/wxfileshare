@@ -1,8 +1,8 @@
 var wxInterface = (function () {
-    var sharingFiles = require('../sharingFiles');
-    var config = require("../config").load("wxInterface");
-    var logger = require('../logger').logger();
-    var utilities = require('../utilities');
+    var sharingFiles = require(__dirname + '/../sharingFiles');
+    var config = require(__dirname + '/../config').load("wxInterface");
+    var logger = require(__dirname + '/../logger').logger();
+    var utilities = require(__dirname + '/../utilities');
 
     var util = require('util');
     var xmlParser = require('xml2js').Parser();

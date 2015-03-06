@@ -1,6 +1,6 @@
 var util = require('util');
-var config = require("./config").load("server");
-var logger = require("./logger").logger();
+var config = require(__dirname + '/config').load("server");
+var logger = require(__dirname + '/logger').logger();
 
 var obj = {};
 

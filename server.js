@@ -3,11 +3,11 @@ var Busboy = require("busboy");
 var util = require("util");
 var fs = require("fs");
 
-var config = require("./app/config").load("server");
-var log = require("./app/logger");
-var wxInterface = require("./app/wx/wxInterface");
-var sharingFiles = require("./app/sharingFiles");
-var utilities = require("./app/utilities");
+var config = require(__dirname + '/app/config').load('server');
+var log = require(__dirname + '/app/logger');
+var wxInterface = require(__dirname + '/app/wx/wxInterface');
+var sharingFiles = require(__dirname + '/app/sharingFiles');
+var utilities = require(__dirname + '/app/utilities');
 
 var app = express();
 var logger = log.logger();
@@ -19,7 +19,7 @@ var port = process.env.port || parseInt(config.defaultPort);
 
 log.use(app);
 
-app.set('views', './views');
+app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
 app.use(function (err, req, res, next) {

@@ -3,10 +3,10 @@ var sharingFiles = (function () {
     var azure = require("azure-storage");
     var util = require("util");
     var iconv = require('iconv-lite');
-    var utilities = require("./utilities");
-    var tableInfo = require("./tableDef");
-    var logger = require("./logger").logger();
-    var config = require("./config").load("azure-storage");
+    var utilities = require(__dirname + '/utilities');
+    var tableInfo = require(__dirname + '/azure-utilities/tableDef');
+    var logger = require(__dirname + '/logger').logger();
+    var config = require(__dirname + '/config').load("azure-storage");
     var blobSvc = azure.createBlobService(config.account, config.primaryKey, config.endPoints.blob);
     var tableSvc = azure.createTableService(config.account, config.primaryKey, config.endPoints.table);
 

@@ -28,5 +28,5 @@ exports.entities2filesInfo = function (entities) {
     return filesInfo;
 };
 
-var tableName = require('./config').load('azure-storage').fileInfoTable;
+var tableName = require('../config').load('azure-storage').fileInfoTable;
 exports.tableName = tableName;
