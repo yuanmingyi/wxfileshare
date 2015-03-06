@@ -1,0 +1,25 @@
+{
+  "endPoints": {
+    "blob": "http://127.0.0.1:10000/",
+    "table": "http://127.0.0.1:10001/",
+    "queue": "http://127.0.0.1:10002/"
+  },
+  "hosts": {
+    "blob": "127.0.0.1:10000",
+    "table": "127.0.0.1:10001",
+    "queue": "127.0.0.1:10002"
+  },
+  "account": "devstoreaccount1",
+  "primaryKey": "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
+  "secondaryKey": "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
+  
+  "version": "2014-02-14",
+  "dataServiceVersion": "3.0;NetFx",
+  "maxDataServiceVersion": "3.0;NetFx",
+    
+  "fileInfoTable": "fileinfo",
+  "maxFilesPerUser": 100,
+  "expiredPeriod": 24,   
+  
+  "runInterval": 15
+}

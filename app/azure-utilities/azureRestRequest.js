@@ -5,10 +5,12 @@ var util = require('util');
 var crypto = require('crypto');
 var parseXml = require('xml2js').parseString;
 
-var config = require(__dirname + "/../config").load("azure-storage");
+var __debug = process.env.__DEBUG;
+var __use_emulator = process.env.__AZURE_STORAGE_EMULATOR;
+
+var config = require(__dirname + "/../config").load(__use_emulator ? "azure-storage-emulator": "azure-storage");
 var clientId = process.env.WEBJOBS_NAME || "wxfileservice";
 
-var __debug = process.env.__DEBUG;
 
 function constructCanonicalizedHeaders(options) {
     var headers = options.headers;
@@ -211,6 +213,7 @@ exports.restApis = function (protocol) {
     var obj = {};
     var protocol = protocol || 'https';
     var port = (protocol.toLowerCase() === 'http' ? 80 : 443);
+
     var createApi = function (method, host, makePathFunction, responseHandler) {
         return function (params, userCallback) {
             var userCallback = userCallback || params;
@@ -220,6 +223,12 @@ exports.restApis = function (protocol) {
                 params = {};
             }
             var pathWithParams = makePathFunction(params);
+
+            if (__use_emulator) {
+                var parts = host.split(':');
+                port = parts[0];
+                host = parts[1];
+            }
             var req = azureRequest(method, host, pathWithParams, port, function (res) {
                 responseHandler(res, userCallback);
             });
@@ -248,11 +257,17 @@ exports.restApis = function (protocol) {
     // the user callback receives two parameters: 1. the request result (true for success and false for failure) 2. the object include all the containers
     obj.listContainers = createBlobApi('GET', function (params) {
         var path = '/?comp=list';
+        var timeout = 60;
         for (var k in params) {
             if (params.hasOwnProperty(k)) {
-                path += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+                if (k === 'timeOut') {
+                    timeout = params[k];
+                } else {
+                    path += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+                }
             }
         }
+        path += '&timeout=' + timeout;
         return path;
     }, function (res, callback) {
         var output = '';
@@ -302,7 +317,7 @@ exports.restApis = function (protocol) {
         var timeout = 60;
         if (typeof params === 'object') {
             containerName = params.name;
-            timeout = params.timeOut;
+            timeout = params.timeOut || timeout;
         }
         return '/' + containerName + '?restype=container&timeout=' + timeout;
     }, function (res, callback) {
@@ -318,11 +333,17 @@ exports.restApis = function (protocol) {
     // the user callback receives two parameters: 1. the request result (true for success and false for failure) 2. the object include the blobs in the container
     obj.listBlobs = createBlobApi('GET', function (params) {
         var path = '/' + params.container + '?restype=container&comp=list';
+        var timeout = 60;
         for (var k in params) {
             if (params.hasOwnProperty(k) && k !== 'container') {
-                path += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+                if (k === 'timeOut') {
+                    timeout = params[k];
+                } else {
+                    path += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+                }
             }
         }
+        path += '&timeout=' + timeout;
         return path;
     }, function (res, callback) {
         var output = '';
