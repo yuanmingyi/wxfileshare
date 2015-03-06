@@ -9,5 +9,6 @@
         "download": "/download/",
         "resources": "/resources/",
         "show": "/show/"
-    }
+    },
+    "testUserId": "~!@#$%^&*()_+"
 }

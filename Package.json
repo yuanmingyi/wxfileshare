@@ -7,13 +7,14 @@
   "main": "./server.js",
   "keywords": [],
   "dependencies": {
-    "xml2js": ">=0.4",
-    "log4js": ">=0.6"
+    "iconv-lite": "^0.4.7",
+    "log4js": ">=0.6",
+    "xml2js": ">=0.4"
   },
   "noAnalyze": true,
   "engines": {
     "node": ">=0.6"
-  },  
+  },
   "devDependencies": {},
   "optionalDependencies": {}
 }

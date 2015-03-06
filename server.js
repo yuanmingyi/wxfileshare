@@ -108,7 +108,10 @@ app.get(config.route.show + ':code', function (req, res) {
     var code = req.params.code;
     var userid = sharingFiles.parseFileListPageCode(code);
     if (userid === '') {
-        // return res.status(403).send('Bad request');
+        return res.status(403).send('Bad request');
+    }
+    if (userid === config.testUserId) {
+        userid = '';
     }
     sharingFiles.sharedFiles(userid, function (fileList) {
         fileList.forEach(function (file) {

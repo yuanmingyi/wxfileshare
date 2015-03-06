@@ -2,13 +2,15 @@ var sharingFiles = (function () {
     var crypto = require("crypto");
     var azure = require("azure-storage");
     var util = require("util");
+    var iconv = require('iconv-lite');
     var utilities = require("./utilities");
+    var tableInfo = require("./tableDef");
     var logger = require("./logger").logger();
     var config = require("./config").load("azure-storage");
     var blobSvc = azure.createBlobService(config.account, config.primaryKey, config.endPoints.blob);
     var tableSvc = azure.createTableService(config.account, config.primaryKey, config.endPoints.table);
 
-    tableSvc.createTableIfNotExists(config.fileInfoTable, function (err, result) {
+    tableSvc.createTableIfNotExists(tableInfo.tableName, function (err, result) {
         if (err) {
             logger.error(util.format('create user file info table failed\n%s', util.inspect(err)));
         }
@@ -20,10 +22,6 @@ var sharingFiles = (function () {
         }).replace(/[A-Z]/g, function ($0) {
             return $0.toLowerCase() + '-0';
         });
-    };
-
-    var generatePartitionKey = function (hashcode) {
-        return '0'; // currently, we don't use special partitonkey since there are only few files
     };
 
     var deleteTableEntity = function (tableName, entity) {
@@ -46,30 +44,6 @@ var sharingFiles = (function () {
                 logger.info(util.format('blob %s/%s does not exist', path, hashcode));
             }
         });
-    };
-
-    var createFileInfoEntity = function (hashcode, path, filename, date) {
-        var entGen = azure.TableUtilities.entityGenerator;
-        return {
-            PartitionKey: entGen.String(generatePartitionKey(hashcode)),
-            RowKey: entGen.String(hashcode),
-            FilePath: entGen.String(path),
-            FileName: entGen.String(filename),
-            CreateDate: entGen.DateTime(date)
-        };
-    };
-
-    var entities2filesInfo = function (entities) {
-        var filesInfo = [];
-        entities.forEach(function (entity) {
-            filesInfo.push({
-                hashCode: entity.RowKey['_'],
-                path: entity.FilePath['_'],
-                fileName: entity.FileName['_'],
-                createDate: new Date(entity.CreateDate['_'])
-            });
-        });
-        return filesInfo;
     };
 
     var obj = {};
@@ -96,10 +70,10 @@ var sharingFiles = (function () {
         var blobFinished = false;
         var entityInserted = false;
         var blobCreated = false;
-        var entity = createFileInfoEntity(hashcode, path, originname, date);
+        var entity = tableInfo.createFileInfoEntity(hashcode, path, originname, date);
 
         var startTime = new Date();
-        tableSvc.insertEntity(config.fileInfoTable, entity, { timeoutIntervalInMs: timeoutInMs }, function (err, result) {
+        tableSvc.insertEntity(tableInfo.tableName, entity, { timeoutIntervalInMs: timeoutInMs }, function (err, result) {
             if (err) {
                 logger.error(util.format("insert entity failed!\n%s", util.inspect(err)));
                 completeCallback(false);
@@ -111,7 +85,7 @@ var sharingFiles = (function () {
             blobSvc.createContainerIfNotExists(path, { publicAccessLevel: 'blob', timeoutIntervalInMs: timeoutInMs - passedTime }, function (err, result, response) {
                 if (err) {
                     logger.error("create container failed!\n" + util.inspect(err));
-                    deleteTableEntity(config.fileInfoTable, entity);
+                    deleteTableEntity(tableInfo.tableName, entity);
                     completeCallback(false);
                     return;
                 }
@@ -121,7 +95,7 @@ var sharingFiles = (function () {
                 blobSvc.createBlockBlobFromText(path, hashcode, fileData, { timeoutIntervalInMs: timeoutInMs - passedTime }, function (err, result) {
                     if (err) {
                         logger.error(util.format("create file blob failed!\nhashcode:%s\nerror:%s", hashcode, util.inspect(err)));
-                        deleteTableEntity(config.fileInfoTable, entity);
+                        deleteTableEntity(tableInfo.tableName, entity);
                         completeCallback(false);
                         return;
                     }
@@ -145,13 +119,13 @@ var sharingFiles = (function () {
             timeout = 120;  // seconds
         }
 
-        tableSvc.queryEntities(config.fileInfoTable, infoTableQuery, null, { timeoutIntervalInMs: timeout * 1000 }, function (err, result) {
+        tableSvc.queryEntities(tableInfo.tableName, infoTableQuery, null, { timeoutIntervalInMs: timeout * 1000 }, function (err, result) {
             if (err) {
                 logger.error(util.format('query file info table for userid failed!\n%s', util.inspect(err)));
                 callback([]);
             } else {
                 logger.trace(util.format('file info for userid %s are queried', userid));
-                callback(entities2filesInfo(result.entries));
+                callback(tableInfo.entities2filesInfo(result.entries));
             }
         });
     };
@@ -164,7 +138,7 @@ var sharingFiles = (function () {
             timeout = 120;  // seconds
         }
 
-        tableSvc.retrieveEntity(config.fileInfoTable, generatePartitionKey(hashcode), hashcode, { timeoutIntervalInMs: timeout }, function (err, entity) {
+        tableSvc.retrieveEntity(tableInfo.tableName, tableInfo.generatePartitionKey(hashcode), hashcode, { timeoutIntervalInMs: timeout }, function (err, entity) {
             if (err) {
                 logger.error(util.format('retrieve entity by hashcode %s failed!:\n%s', hashcode, util.inspect(error)));
                 complete(false);
@@ -172,7 +146,7 @@ var sharingFiles = (function () {
             }
 
             logger.trace(util.format('file info for hashcode %s is retrieved:\n%s', hashcode, util.inspect(entity)));
-            complete(true, entities2filesInfo([entity])[0]);
+            complete(true, tableInfo.entities2filesInfo([entity])[0]);
         });
     };
 
@@ -197,11 +171,15 @@ var sharingFiles = (function () {
     };
 
     obj.fileListPageCode = function (userid) {
-        return encodeURIComponent('u' + userid);
+        return encodeURIComponent(userid);
     };
 
     obj.parseFileListPageCode = function (code) {
-        return decodeURIComponent(code).slice(1);
+        code = code.replace(/%([a-zA-Z0-9]{2})/g, function (_, c) {
+            return String.fromCharCode(parseInt(c, 16));
+        });
+        var buff = new Buffer(code, 'binary');
+        return iconv.decode(buff, 'gbk');
     };
 
     obj.setLogger = function (newLogger) {
