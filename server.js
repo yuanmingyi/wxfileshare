@@ -12,10 +12,10 @@ var utilities = require(__dirname + '/app/utilities');
 var app = express();
 var logger = log.logger();
 
-var maxFileSize = parseInt(config.maxFileSize);
-var connectionTmeout = parseInt(config.connectionTimeout);      // seconds
+var maxFileSize = config.maxFileSize;
+var connectionTmeout = config.connectionTimeout;      // seconds
 
-var port = process.env.port || parseInt(config.defaultPort);
+var port = process.env.port || config.defaultPort;
 
 log.use(app);
 

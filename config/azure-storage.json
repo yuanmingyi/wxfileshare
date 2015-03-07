@@ -9,6 +9,11 @@
     "table": "wxfileshare.table.core.windows.net",
     "queue": "wxfileshare.queue.core.windows.net"  
   },
+  "lite": {
+    "blob": false,
+    "table": false,
+    "queue": false
+  },
   "account": "wxfileshare",
   "primaryKey": "NazD7m+S25LAp4z9iXesKNps1zX5AC3NxNy/YdS2sDAJmQPd8BVSnnY40/m3P77eqdStiZgCpGUF2Kmr9diPtA==",
   "secondaryKey": "7XVm5o7Zxp4lOgAf93z5OPYL10aQ7EujNskuLudPTww03jKJxSMHLWVGnhDtWeKvsXkPSvUFpTBKSuRYLMt3BA==",

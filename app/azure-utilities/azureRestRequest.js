@@ -9,7 +9,7 @@ var logger = require(__dirname + '/../logger').logger();
 var __debug = process.env.__DEBUG;
 var __use_emulator = process.env.__AZURE_STORAGE_EMULATOR;
 
-var config = require(__dirname + "/../config").load(__use_emulator ? "azure-storage-emulator": "azure-storage");
+var config = require(__dirname + "/../config").load(__use_emulator ? "azure-storage-emulator" : "azure-storage");
 var clientId = process.env.WEBJOBS_NAME || "wxfileservice";
 
 if (__use_emulator) {
@@ -21,7 +21,7 @@ function constructCanonicalizedHeaders(options) {
     var msHeaders = [];
     for (var key in headers) {
         if (headers.hasOwnProperty(key) && key.toLowerCase().indexOf('x-ms-') === 0) {
-            // console.log(util.format('key: %s, value: %s', key, headers[key]));
+            // logger.info(util.format('key: %s, value: %s', key, headers[key]));
             msHeaders.push(key.trim().toLowerCase() + ':' + headers[key].trim().replace(/\s{2,}/g, ' '));
         }
     }
@@ -72,20 +72,15 @@ function constructCanonicalizedResource(options) {
     return canonicalizedResourceString;
 }
 
-function constructHeadersWithoutAuth(version, date, cid, moreHeaders) {
+function constructHeadersWithoutAuth(version, date, cid) {
     var headers = {
         'x-ms-version': version,
         'x-ms-date': date,
         'x-ms-client-request-id': cid,
         'Accept': 'application/json;odata=nometadata',
-        'Accept-Charset': 'UTF-8'
+        'Accept-Charset': 'UTF-8',
+        'Prefer': 'return-no-content'
     };
-
-    for (var key in moreHeaders) {
-        if (moreHeaders.hasOwnProperty(key)) {
-            headers[key] = moreHeaders[key];
-        }
-    }
 
     return headers;
 }
@@ -114,57 +109,31 @@ function constructAuthorizationHeader(cr, keyName, account, secureKey, verb, hea
 
     stringToSign += canonicalizedResource;
     if (__debug) {
-        console.log(util.format('sign string:\n%s', util.inspect(stringToSign)));
+        logger.info(util.format('sign string:\n%s', util.inspect(stringToSign)));
     }
 
     var signatuare = generateSignature(secureKey, stringToSign);
     return util.format('%s %s:%s', keyName, account, signatuare);
 }
 
-var makeAuthorizationHeader = function (lite, account, secureKey, verb, headers, canonicalizedHeaders, canonicalizedResource) {
-    var cr = ['verb', 'Content-Encoding', 'Content-Language', 'Content-Length', 'Content-MD5', 'Content-Type', 'Date', 'If-Modified-Since', 'If-Match', 'If-None-Match', 'If-Unmodified-Since', 'Range'];
+var getCanonicalizedResourceItem = function (lite) {
     if (lite) {
-        cr = ['verb', 'Content-MD5', 'Content-Type', 'Date'];
+        return ['verb', 'Content-MD5', 'Content-Type', 'Date'];
+    } else {
+        return ['verb', 'Content-Encoding', 'Content-Language', 'Content-Length', 'Content-MD5', 'Content-Type', 'Date', 'If-Modified-Since', 'If-Match', 'If-None-Match', 'If-Unmodified-Since', 'Range'];
     }
-    var keyName = lite ? 'SharedKeyLite' : 'SharedKey';
-    return constructAuthorizationHeader(cr, keyName, account, secureKey, verb, headers, canonicalizedHeaders, canonicalizedResource);
 };
 
-var makeTableAuthorizationHeader = function (lite, account, secureKey, verb, headers, canonicalizedResource) {
-    var cr = lite ? ['x-ms-date'] : ['verb', 'Content-MD5', 'Content-Type', 'x-ms-date'];
-    var keyName = lite ? 'SharedKeyLite' : 'SharedKey';
-    return constructAuthorizationHeader(cr, keyName, account, secureKey, verb, headers, '', canonicalizedResource);
+var getTableCanonicalizedResourceItem = function (lite) {
+    if (lite) {
+        return ['x-ms-date'];
+    } else {
+        return ['verb', 'Content-MD5', 'Content-Type', 'x-ms-date'];
+    }
 }
 
-var constructAzureOptions = exports._testOptionsConstructor = function (method, host, port, path, version, date, cid, secureKey, account, lite) {
-    var options = {
-        method: method,
-        hostname: host,
-        port: port,
-        path: path,
-        headers: constructHeadersWithoutAuth(version, date, cid)
-    };
-
-    var canonicalizedHeaders = constructCanonicalizedHeaders(options);
-    var canonicalizedResource = constructCanonicalizedResource(options);
-    options.headers['Authorization'] = makeAuthorizationHeader(lite, account, secureKey, method, options.headers, canonicalizedHeaders, canonicalizedResource);
-
-    return options;
-};
-
-var constructAzureTableOptions = exports._testTableOptionsConstructor = function (method, host, port, path, version, date, cid, odataVersion, maxOdataVersion, secureKey, account, lite) {
-    var options = {
-        method: method,
-        hostname: host,
-        port: port,
-        path: path,
-        headers: constructHeadersWithoutAuth(version, date, cid, { DataServiceVersion: odataVersion, MaxDataServiceVersion: maxOdataVersion })
-    };
-
-    var canonicalizedResource = constructCanonicalizedResource(options);
-    options.headers['Authorization'] = makeTableAuthorizationHeader(lite, account, secureKey, method, options.headers, canonicalizedResource);
-
-    return options;
+var getSharedKeyName = function (lite) {
+    return lite ? 'SharedKeyLite' : 'SharedKey';
 };
 
 var getTypeFromHost = function (host) {
@@ -174,40 +143,42 @@ var getTypeFromHost = function (host) {
 
 // compose the REST API request headers to the azure storage,
 // refer to https://msdn.microsoft.com/en-us/library/azure/dd179428.aspx
-var azureRequest = exports.request = function (method, host, path, port, callback) {
+var azureRequest = exports.request = function (type, method, host, data, path, port, callback) {
     var protocol = (port === 443 ? https : http);
-    var type = getTypeFromHost(host);
-    var options = null;
+    var headers = constructHeadersWithoutAuth(config.version, (new Date()).toUTCString(), clientId);
+
     if (type === 'table') {
-        options = constructAzureTableOptions(
-            method,
-            host,
-            port,
-            path,
-            config.version,
-            (new Date()).toUTCString(),
-            clientId,
-            config.dataServiceVersion,
-            config.maxDataServiceVersion,
-            config.primaryKey,
-            config.account,
-            true);
-    } else {
-        options = constructAzureOptions(
-            method,
-            host,
-            port,
-            path,
-            config.version,
-            (new Date()).toUTCString(),
-            clientId,
-            config.primaryKey,
-            config.account,
-            false);
+        headers['DataServiceVersion'] = config.dataServiceVersion;
+        headers['MaxDataServiceVersion'] = config.maxDataServiceVersion;
     }
 
+    if (data && typeof data === 'object') {
+        // data is json
+        headers['Content-Type'] = 'application/json';
+        headers['Content-Length'] = JSON.stringify(data).length;
+    } else if (data && typeof data === 'string') {
+        headers['Content-Type'] = 'application/atom+xml';
+        headers['Content-Length'] = data.length;
+    }
+
+    var options = {
+        method: method,
+        hostname: host,
+        port: port,
+        path: path,
+        headers: headers
+    };
+
+    var canonicalizedHeaders = type === 'table' ? '' : constructCanonicalizedHeaders(options);
+    var canonicalizedResource = constructCanonicalizedResource(options);
+    var lite = config.lite[type];
+    var cr = type === 'table' ? getTableCanonicalizedResourceItem(lite) : getCanonicalizedResourceItem(lite);
+
+    options.headers['Authorization'] =
+        constructAuthorizationHeader(cr, getSharedKeyName(lite), config.account, config.primaryKey, method, headers, canonicalizedHeaders, canonicalizedResource);
+
     if (__debug === 'trace') {
-        console.log(util.format('request option:\n%s', util.inspect(options)));
+        logger.trace(util.format('request option:\n%s', util.inspect(options)));
     }
 
     return protocol.request(options, callback);
@@ -215,51 +186,99 @@ var azureRequest = exports.request = function (method, host, path, port, callbac
 
 exports.restApis = function (protocol) {
     var obj = {};
-    var protocol = protocol || 'https';
-    var port = (protocol.toLowerCase() === 'http' ? 80 : 443);
+    var defaultProtocol = protocol || 'https';
+    var defaultPort = (defaultProtocol.toLowerCase() === 'http' ? 80 : 443);
+    var defaultEncoding = 'utf8';
 
-    var createApi = function (method, host, makePathFunction, responseHandler) {
-        return function (params, userCallback) {
-            var userCallback = userCallback || params;
-            if (typeof params === 'function') {
-                // params is optional, which means the first parameter can be callback
-                userCallback = params;
-                params = {};
+    // create the rest api.
+    var createApi = function (apiName, type, method, host, makePathFunction, makeDataFunction, responseHandler) {
+        // the return function has three parameters:
+        // (params, data, userCallback)
+        // the params and data are optional, and the userCallback is required
+        obj[apiName] = function () {
+            var paramLen = arguments.length;
+            var userCallback = null;
+            var pathParam = {};
+            var dataParam = null;
+            var actualHost = host;
+            var port = defaultPort;
+
+            if (paramLen > 0) {
+                userCallback = arguments[paramLen - 1];
             }
-            var pathWithParams = makePathFunction(params);
+            if (paramLen > 1) {
+                pathParam = arguments[0];
+            }
+            if (paramLen > 2) {
+                dataParam = arguments[1];
+            }
+            // assert.true(paramLen <= 3);
 
+            var pathWithParams = makePathFunction(pathParam);
+            var dataSent = makeDataFunction ? makeDataFunction(dataParam) : null;
+
+            // when use the azure storage emulator, the port is included in the host (e.g. 127.0.0.1:10000)
             if (__use_emulator) {
-                var parts = host.split(':');
-                port = parts[0];
-                host = parts[1];
+                var parts = actualHost.split(':');
+                actualHost = parts[0];
+                port = parts[1];
+                pathWithParams = '/' + config.account + pathWithParams;
             }
-            var req = azureRequest(method, host, pathWithParams, port, function (res) {
-                responseHandler(res, userCallback);
+
+            var req = azureRequest(type, method, actualHost, dataSent, pathWithParams, port, function (res) {
+                var output = [];
+                var length = 0;
+
+                logger.info(util.format('[%s] %s:%s - %d', apiName, actualHost, port, res.statusCode));
+                res.setEncoding(defaultEncoding);
+
+                res.on('data', function (chunk) {
+                    output.push(chunk);
+                    length += chunk.length;
+                });
+
+                res.on('end', function () {
+                    var data = Buffer.concat(output, length);
+                    responseHandler(null, res, data, userCallback);
+                });
+
+                res.on('error', function (err) {
+                    var data = Buffer.concat(output, length);
+                    logger.error(util.format('[%s]: %s', apiName, err.message));
+                    responseHandler(err, res, data, userCallback);
+                });
             });
 
             req.on('error', function (err) {
-                console.log(util.format('problem with request: %s\n%s', err.message, util.inspect(req.headers)));
+                logger.error(util.format('problem with request: %s\nrequest header: %s', err.message, util.inspect(req._header)));
             });
 
+            req.write(JSON.stringify(dataSent));
             req.end();
         };
     };
 
-    var createBlobApi = function (method, makePathFunction, responseHandler) {
-        return createApi(method, config.hosts.blob, makePathFunction, responseHandler);
+    // create rest api for storage type
+    var createBlobApi = function (apiName, method, makePathFunction, makeDataFunction, responseHandler) {
+        createApi(apiName, 'blob', method, config.hosts.blob, makePathFunction, makeDataFunction, responseHandler);
     };
 
-    var createTableApi = function (method, makePathFunction, responseHandler) {
-        return createApi(method, config.hosts.table, makePathFunction, responseHandler);
+    var createTableApi = function (apiName, method, makePathFunction, makeDataFunction, responseHandler) {
+        createApi(apiName, 'table', method, config.hosts.table, makePathFunction, makeDataFunction, responseHandler);
     };
 
-    var createQueueApi = function (method, makePathFunction, responseHandler) {
-        return createApi(method, config.hosts.queue, makePathFunction, responseHandler);
+    var createQueueApi = function (apiName, method, makePathFunction, makeDataFunction, responseHandler) {
+        createApi(apiName, 'queue', method, config.hosts.queue, makePathFunction, makeDataFunction, responseHandler);
     };
 
-    // list all the containers
-    // the user callback receives two parameters: 1. the request result (true for success and false for failure) 2. the object include all the containers
-    obj.listContainers = createBlobApi('GET', function (params) {
+    // usage: listContainers(params, onComplete)
+    // params: object {
+    //           'timeout': timeout in second (optional and default is 60s)
+    //           *other parameters* (optional and refered to msdn)
+    //         }
+    // onComplete (optional): function (result, containers), callback to be invoked when the response returns.
+    //         result is true if succeeded. containers is the object array containing all the containers' info.
+    createBlobApi('listContainers', 'GET', function (params) {
         var path = '/?comp=list';
         var timeout = 60;
         for (var k in params) {
@@ -273,50 +292,43 @@ exports.restApis = function (protocol) {
         }
         path += '&timeout=' + timeout;
         return path;
-    }, function (res, callback) {
-        var output = '';
-        console.log(config.hosts.blob + ':' + res.statusCode);
-        res.setEncoding('utf8');
-
-        res.on('data', function (chunk) {
-            output += chunk;
-        });
-
-        res.on('end', function () {
-            if (res.statusCode !== 200) {
-                if (!!callback) {
-                    callback(false, output);
-                }
-                return;
-            }
-
-            parseXml(output, function (err, result) {
-                var result = result;
+    }, null, function (err, res, data, callback) {
+        var result = !err && res.statusCode === 200;
+        if (result) {
+            parseXml(data.toString(defaultEncoding), function (err, object) {
                 if (err) {
-                    console.log(util.format('parse xml data failed: %s', util.inpsect(err)));
-                    result = undefined;
+                    logger.error(util.format('parse xml data failed: %s', util.inpsect(err)));
+                    result = false;
+                    object = '';
                 } else {
-                    result = result.EnumerationResults.Containers[0].Container || [];
-                    for (var i = 0; i < result.length; i++) {
-                        result[i].Name = result[i].Name[0];
-                        result[i].Properties = result[i].Properties[0];
-                        for (var key in result[i].Properties) {
-                            if (result[i].Properties.hasOwnProperty(key)) {
-                                result[i].Properties[key] = result[i].Properties[key][0];
+                    object = object.EnumerationResults.Containers[0].Container || [];
+                    for (var i = 0; i < object.length; i++) {
+                        object[i].Name = object[i].Name[0];
+                        object[i].Properties = object[i].Properties[0];
+                        for (var key in object[i].Properties) {
+                            if (object[i].Properties.hasOwnProperty(key)) {
+                                object[i].Properties[key] = object[i].Properties[key][0];
                             }
                         }
                     }
                 }
-                if (!!callback) {
-                    callback(!err, result);
+                if (callback) {
+                    callback(result, object);
                 }
             });
-        });
+        } else if (callback) {
+            callback(result, data.toString(defaultEncoding));
+        }
     });
 
-    // delete the specified container
-    // the user callback receives a boolean indicated whether the operation is successful
-    obj.deleteContainer = createBlobApi('DELETE', function (params) {
+    // usage: deleteContainer(params, onComplete)
+    // params: object {
+    //           'container': containerName,
+    //           'timeout': timeout in second (optional and default is 60s)
+    //         }
+    //         represents the container to be delete
+    // onComplete (optional): function (result), callback to be invoked when the response returns. result is true if succeeded
+    createBlobApi('deleteContainer', 'DELETE', function (params) {
         var containerName = params;
         var timeout = 60;
         if (typeof params === 'object') {
@@ -324,18 +336,25 @@ exports.restApis = function (protocol) {
             timeout = params.timeOut || timeout;
         }
         return '/' + containerName + '?restype=container&timeout=' + timeout;
-    }, function (res, callback) {
-        var result = (res.statusCode === 202);
-        res.on('end', function () {
-            if (!!callback) {
-                callback(result);
-            }
-        });
+    }, null, function (err, res, data, callback) {
+        var result = !err && (res.statusCode === 202);
+        if (!result) {
+            logger.trace(util.format('response: %s', data.toString(defaultEncoding)));
+        }
+        if (callback) {
+            callback(result);
+        }
     });
 
-    // list all the blobs in a specified container
-    // the user callback receives two parameters: 1. the request result (true for success and false for failure) 2. the object include the blobs in the container
-    obj.listBlobs = createBlobApi('GET', function (params) {
+    // usage: listBlobs(params, onComplete)
+    // params: object {
+    //           'container': containerName,
+    //           'timeout': timeout in second (optional and default is 60s)
+    //           *other parameters* (optional and refered to msdn)
+    //         }
+    // onComplete (optional): function (result, blobs), callback to be invoked when the response returns.
+    //         result is true if succeeded. blobs is the object array containing all the blobs' info in the container.
+    createBlobApi('listBlobs', 'GET', function (params) {
         var path = '/' + params.container + '?restype=container&comp=list';
         var timeout = 60;
         for (var k in params) {
@@ -349,82 +368,95 @@ exports.restApis = function (protocol) {
         }
         path += '&timeout=' + timeout;
         return path;
-    }, function (res, callback) {
-        var output = '';
-        console.log(config.hosts.blob + ':' + res.statusCode);
-        res.setEncoding('utf8');
-
-        res.on('data', function (chunk) {
-            output += chunk;
-        });
-
-        res.on('end', function () {
-            if (res.statusCode !== 200) {
-                if (!!callback) {
-                    callback(false, output);
-                }
-                return;
-            }
-
-            parseXml(output, function (err, result) {
-                var result = result;
+    }, null, function (err, res, data, callback) {
+        var result = !err && res.statusCode === 200;
+        if (result) {
+            parseXml(data.toString(defaultEncoding), function (err, object) {
                 if (err) {
-                    console.log(util.format('parse xml data failed: %s', util.inpsect(err)));
-                    result = undefined;
+                    logger.error(util.format('parse xml data failed: %s', util.inpsect(err)));
+                    result = false;
+                    object = '';
                 } else {
-                    result = result.EnumerationResults.Blobs[0].Blob || [];
-                    for (var i = 0; i < result.length; i++) {
-                        result[i].Name = result[i].Name[0];
-                        result[i].Properties = result[i].Properties[0];
-                        for (var key in result[i].Properties) {
-                            if (result[i].Properties.hasOwnProperty(key)) {
-                                result[i].Properties[key] = result[i].Properties[key][0];
+                    object = object.EnumerationResults.Blobs[0].Blob || [];
+                    for (var i = 0; i < object.length; i++) {
+                        object[i].Name = object[i].Name[0];
+                        object[i].Properties = object[i].Properties[0];
+                        for (var key in object[i].Properties) {
+                            if (object[i].Properties.hasOwnProperty(key)) {
+                                object[i].Properties[key] = object[i].Properties[key][0];
                             }
                         }
                     }
                 }
-                if (!!callback) {
-                    callback(!err, result);
+                if (callback) {
+                    callback(result, object);
                 }
             });
-        });
+        } else if (callback) {
+            callback(result, data.toString(defaultEncoding));
+        }
     });
 
-    // delete the specified blob in specified container
-    // the user callback receives a boolean indicated whether the operation is successful
-    obj.deleteBlob = createBlobApi('DELETE', function (params) {
+    // usage: deleteBlob(params, onComplete)
+    // params: object {
+    //           'container': containerName,
+    //           'blob': blobName,
+    //           'timeout': timeout in second (optional and default is 60s)
+    //         }
+    //         represents the blob to be delete
+    // onComplete (optional): function (result), callback to be invoked when the response returns. result is true if succeeded
+    createBlobApi('deleteBlob', 'DELETE', function (params) {
         var containerName = params.container;
         var blobName = params.blob;
         var timeout = params.timeOut || 60; // seconds
         return '/' + containerName + '/' + blobName + '?timeout=' + timeout;
-    }, function (res, callback) {
-        var result = (res.statusCode === 202);
-        res.on('end', function () {
-            if (!!callback) {
-                callback(result);
-            }
-        });
+    }, null, function (err, res, data, callback) {
+        var result = !err && (res.statusCode === 202);
+        if (!result) {
+            logger.trace(util.format('response: %s', data.toString(defaultEncoding)));
+        }
+        if (callback) {
+            callback(result);
+        }
     });
 
-    obj.getBlobProperties = createBlobApi('HEAD', function (params) {
+    // usage: getBlobProperties(params, onComplete)
+    // params: object {
+    //           'container': containerName,
+    //           'blob': blobName,
+    //           'timeout': timeout in second (optional and default is 60s)
+    //         }
+    //         represents the blob to be fetched
+    // onComplete (optional): function (properties), callback to be invoked when the response returns.
+    //         properties is the response headers which contains the properties of the blob.
+    createBlobApi('getBlobProperties', 'HEAD', function (params) {
         var containerName = params.container;
         var blobName = params.blob;
         var timeout = params.timeOut || 60; // seconds
         return '/' + containerName + '/' + blobName + '?timeout=' + timeout;
-    }, function (res, callback) {
-        res.on('end', function () {
-            var properties = null;
-            if (res.statusCode === 200) {
-                properties = res.headers;
-            }
-            if (!!callback) {
-                callback(properties);
-            }
-        });
+    }, null, function (err, res, data, callback) {
+        var result = !err && res.statusCode === 200;
+        var properties = res.headers;
+        if (!result) {
+            logger.trace('response: %s', data.toString(defaultEncoding));
+            properties = [];
+        }
+        if (callback) {
+            callback(properties);
+        }
     });
 
-    // the user callback receives two parameters: 1. the query result (true for success and false for failure) 2. the object include the result entities
-    obj.queryEntities = createTableApi('GET', function (params) {
+    // usage: queryEntities(params, onComplete)
+    // params: object {
+    //          'table': tablename,
+    //          'partitionKey': PartitionKey,   (optional)
+    //          'rowKey': RowKey,               (optional)
+    //          'query': query parameters       (used to compose the query string, does not work currently)
+    //         }
+    //         represents the entity to be deleted
+    // onComplete (optional): function (result, entities), callback to be invoked when the response returns.
+    //         result is true if succeeded. and entities is the query result object
+    createTableApi('queryEntities', 'GET', function (params) {
         var path = '/' + params.table;
         var query = '';
 
@@ -449,51 +481,73 @@ exports.restApis = function (protocol) {
         }
 
         return path + query;
-    }, function (res, callback) {
-        var output = '';
-        console.log(config.hosts.table + ':' + res.statusCode);
-        res.setEncoding('utf8');
-
-        res.on('data', function (chunk) {
-            output += chunk;
-        });
-
-        res.on('end', function () {
-            if (res.statusCode !== 200) {
-                if (!!callback) {
-                    callback(false, output);
-                }
-                return;
-            }
-
-            result = JSON.parse(output);
-            if (!!callback) {
-                callback(true, result);
-            }
-        });
+    }, null, function (err, res, data, callback) {
+        var result = !err && res.statusCode === 200;
+        var text = data.toString(defaultEncoding);
+        if (callback) {
+            callback(result, result ? JSON.parse(text) : text);
+        }
     });
 
-    obj.deleteEntity = createTableApi('DELETE', function (params) {
+    // usage: deleteEntity(params, onComplete)
+    // params: object { 'table': tablename, 'partitionKey': PartitionKey, 'rowKey': RowKey } represents the entity to be deleted
+    // onComplete (optional): function (result), callback to be invoked when the response returns. result is true if succeeded.
+    createTableApi('deleteEntity', 'DELETE', function (params) {
         var table = params.table;
         var partitionKey = params.partitionKey;
         var rowKey = params.rowKey;
         return util.format("/%s(PartitionKey='%s', RowKey='%s')", partitionKey, rowKey);
-    }, function (res, callback) {
-        var result = (res.statusCode === 204);
-        res.on('end', function () {
-            if (!!callback) {
+    }, null, function (err, res, data, callback) {
+        // 204 means no content (successful)
+        var result = !err && (res.statusCode === 204);
+        if (!result) {
+            logger.trace(util.format('response: %s', data.toString(defaultEncoding)));
+        }
+        if (callback) {
+            callback(result);
+        }
+    });
+
+    // usage: createTable(tableName, onComplete)
+    // tableName: string name of the table to be created
+    // onComplete (optional): function (result), callback to be invoked when the response returns. result is true if succeeded.
+    (function () {
+        var tableName;
+        createTableApi('createTable', 'POST', function (param) {
+            tableName = param;
+            return '/Tables';
+        }, function () {
+            return { "TableName": tableName };
+        }, function (err, res, data, callback) {
+            // 201 means created and 204 means no content
+            var result = !err && (res.statusCode === 201) || (res.statusCode === 204);
+            if (!result) {
+                logger.trace(util.format('response: %s', data.toString(defaultEncoding)));
+            }
+            if (callback) {
                 callback(result);
             }
         });
+    })();
+
+    // usage: insertEntity(tableName, entityObject, onComplete)
+    // tableName: string name of the table
+    // entityObject: object represents the entity, must contains "PartitionKey" and "RowKey" properties of string type
+    // onComplete (optional): function (result), callback to be invoked when the response returns. result is true if succeeded.
+    createTableApi('insertEntity', 'POST', function (tableName) {
+        return '/' + tableName;
+    }, function (entityObject) {
+        return entityObject;
+    }, function (err, res, data, callback) {
+        // 201 means created and 204 means no content
+        var result = !err && ((res.statusCode === 201) || (res.statusCode === 204));
+        if (!result) {
+            logger.trace(util.format('response: %s', data.toString(defaultEncoding)));
+        }
+        if (callback) {
+            callback(result);
+        }
     });
 
     return obj;
-};
-
-exports.httpRequest = function (method, host, path, callback) {
-    azureRequest(method, host, path, 80, callback);
-};
-
-exports.httpsRequest = function (method, host, path, callback) {
-    azureRequest(method, host, path, 443, callback);
 };

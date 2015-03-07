@@ -9,6 +9,11 @@
     "table": "127.0.0.1:10001",
     "queue": "127.0.0.1:10002"
   },
+  "lite": {
+    "blob": false,
+    "table": false,
+    "queue": false
+  },
   "account": "devstoreaccount1",
   "primaryKey": "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
   "secondaryKey": "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
