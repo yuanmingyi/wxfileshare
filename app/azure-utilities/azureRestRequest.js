@@ -4,6 +4,7 @@ var fs = require('fs');
 var util = require('util');
 var crypto = require('crypto');
 var parseXml = require('xml2js').parseString;
+var logger = require(__dirname + '/../logger').logger();
 
 var __debug = process.env.__DEBUG;
 var __use_emulator = process.env.__AZURE_STORAGE_EMULATOR;
@@ -11,6 +12,9 @@ var __use_emulator = process.env.__AZURE_STORAGE_EMULATOR;
 var config = require(__dirname + "/../config").load(__use_emulator ? "azure-storage-emulator": "azure-storage");
 var clientId = process.env.WEBJOBS_NAME || "wxfileservice";
 
+if (__use_emulator) {
+    logger.info('USE AZURE STORAGE EMULATOR');
+}
 
 function constructCanonicalizedHeaders(options) {
     var headers = options.headers;
