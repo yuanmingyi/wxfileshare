@@ -104,4 +104,34 @@ obj.getResources = function (path) {
     };
 };
 
+obj.guid = function () {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+obj.binarySearch = function (arr, obj, compare) {
+    if ((typeof compare) !== 'function') {
+        compare = function (obj, ele) {
+            return obj - ele;
+        }
+    }
+
+    var low = 0, high = arr.length, mid;
+    while (low < high) {
+        mid = Math.floor((low + high) / 2);
+        var res = compare(obj, arr[mid]);
+        if (res < 0) {
+            high = mid;
+        } else if (res > 0) {
+            low = mid + 1;
+        } else {
+            return mid;
+        }
+    }
+
+    return -1;
+}
+
 module.exports = obj;

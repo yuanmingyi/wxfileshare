@@ -1,8 +1,8 @@
 {
   "endPoints": {
-    "blob": "http://127.0.0.1:10000/",
-    "table": "http://127.0.0.1:10002/",
-    "queue": "http://127.0.0.1:10001/"
+    "blob": "http://127.0.0.1:10000/devstoreaccount1/",
+    "table": "http://127.0.0.1:10002/devstoreaccount1/",
+    "queue": "http://127.0.0.1:10001/devstoreaccount1/"
   },
   "hosts": {
     "blob": "127.0.0.1:10000",
@@ -24,7 +24,8 @@
     
   "fileInfoTable": "fileinfo",
   "maxFilesPerUser": 100,
-  "expiredPeriod": 24,   
+  "expiredPeriodInHour": 24,   
   
-  "runInterval": 15
+  "runIntervalInMin": 1,
+  "creationDelayInSec": 200
 }

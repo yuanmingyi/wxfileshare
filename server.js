@@ -110,7 +110,7 @@ app.get(config.route.show + ':code', function (req, res) {
     if (userid === '') {
         return res.status(403).send('Bad request');
     }
-    if (userid === config.testUserId) {
+    if (code === config.testUserId) {
         userid = '';
     }
     sharingFiles.sharedFiles(userid, function (fileList) {

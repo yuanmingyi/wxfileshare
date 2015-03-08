@@ -1,17 +1,18 @@
-process.env.__AZURE_STORAGE_EMULATOR = true;
+var originEmulated = process.env.EMULATED;
+process.env.EMULATED = true;
 
 var assert = require('assert');
 var util = require('util');
 
 // for local simulator, the protocol will indeed be 'http'
 var azureRest = require(__dirname + '/../app/azure-utilities/azureRestRequest').restApis('https');
-var config = require(__dirname + '/../app/config').load('azure-storage-emulator');
+var config = require(__dirname + '/../app/config').load('azure-storage');
 var logger = require(__dirname + '/../app/logger').logger();
 var utils = require(__dirname + '/utils');
 
 var tableName = 'testTable';
 var dateNow = new Date().getTime();
-var expiredDate = dateNow - config.expiredPeriod * 3600000 - 1;
+var expiredDate = dateNow - config.expiredPeriodInHour * 3600000 - 1;
 
 var entity1 = {
     PartitionKey: '123456',
@@ -98,6 +99,7 @@ azureRest.deleteTable(tableName, function (result) {
                                         // see if tables contains the deleted table
                                         assert(!contains(tables.value, { TableName: tableName }, false), util.format('table %s should not exist anymore', tableName));
                                         logger.info('table operations test PASS!');
+                                        process.env.EMULATED = originEmulated;
                                     });
                                 });
                             });

@@ -4,128 +4,161 @@ var azureApis = require(rootPath + '/app/azure-utilities/azureRestRequest').rest
 var tableInfo = require(rootPath + '/app/azure-utilities/tableDef');
 var logger = require(rootPath + '/app/logger').logger();
 var util = require('util');
+var utilities = require(rootPath + '/app/utilities');
 var fs = require('fs');
 var config = require(rootPath + '/app/config').load("azure-storage");
 
 var msPerHour = 3600000;
 var msPerMinute = 60000;
 var msPerSecond = 1000;
-var expiredTimeSpan = config.expiredPeriod * msPerHour;   // milliseconds
-var runInterval = config.runInterval * msPerMinute;    // milliseconds
-
-function binarySearch(arr, obj, compare) {
-    if (typeof compare !== 'function') {
-        compare = function (obj, ele) {
-            return obj - ele;
-        }
-    }
-
-    var low = 0, high = arr.length, mid;
-    while (low < high) {
-        mid = Math.floor((low + high) / 2);
-        var res = compare(obj, arr[mid]);
-        if (res < 0) {
-            high = mid;
-        } else if (res > 0) {
-            low = mid + 1;
-        } else {
-            return mid;
-        }
-    }
-
-    return -1;
-}
+var expiredTimeSpan = config.expiredPeriodInHour * msPerHour;   // milliseconds
+var runInterval = config.runIntervalInMin * msPerMinute;    // milliseconds
+var creationDelay = config.creationDelayInSec * msPerSecond;    // milliseconds
+var table = tableInfo.tableName;
 
 var deleteEntity = function (tableName, entity) {
     azureApis.deleteEntity({ table: tableName, PartitionKey: entity.PartitionKey, RowKey: entity.RowKey }, function (result) {
         if (result) {
-            logger.info(util.format('entity %s (%s) delete succeeded', entity.RowKey, entity.FileNam));
+            logger.info(util.format('entity %s (%s) delete succeeded', entity.RowKey, entity.FileName));
         } else {
             logger.error(util.format('entity %s (%s) delete failed', entity.RowKey, entity.FileName));
         }
     });
 }
 
-//list all the container in the storage
-function run() {
+var deleteBlob = function (containerName, blobName) {
+    azureApis.deleteBlob({ container: containerName, blob: blobName }, function (result) {
+        if (result) {
+            logger.info(util.format('file blob %s delete succeeded', blobName));
+        } else {
+            logger.error(util.format('file blob %s delete failed', blobName));
+        }
+    });
+};
+
+var start = function () {
     logger.info('start scanning...');
 
     azureApis.queryEntities({
-        table: tableInfo.tableName
-    }, function (result, object) {
+        table: table
+    }, checkEntities);
+};
+
+var end = function () {
+    setTimeout(start, runInterval);
+    logger.info(util.format('waiting for %d minutes to restart...', config.runIntervalInMin));
+};
+
+var checkEntities = function (result, object) {
+    if (!result) {
+        logger.error("query table failed:\n %s", util.inspect(object));
+        return;
+    }
+
+    var entities = object.value;
+    logger.info(util.format("found %d entities", entities.length));
+
+    checkEntityOneByOne(entities, 0, checkContainers);
+};
+
+var checkEntityOneByOne = function (entities, index, next) {
+    if (index >= entities.length) {
+        return next();
+    }
+    var entity = entities[index];
+    azureApis.getBlobProperties({
+        container: entity.FilePath,
+        blob: entity.RowKey
+    }, function (result, headers) {
+        checkBlobProperties(entity, result, headers);
+        checkEntityOneByOne(entities, index + 1, next);
+    });
+};
+
+var checkBlobProperties = function (entity, result, headers) {
+    var dateNow = new Date();
+    var createDate = new Date(entity.CreateDate);
+    if (!result) {
+        // not found the blob
+        if (dateNow - createDate < creationDelay) {
+            logger.info('entry %s (%s) is just created, will check the file blob again next time', entity.RowKey, entity.FileName);
+        } else {
+            logger.info('file %s (%s) is not found, entity is to be deleted', entity.RowKey, entity.FileName);
+            deleteEntity(table, entity);
+        }
+    }
+    else if (dateNow - createDate > expiredTimeSpan) {
+        // expired
+        logger.info('entry %s (%s) is expired, would be deleted', entity.RowKey, entity.FileName);
+        deleteEntity(table, entity);
+    }
+};
+
+var checkContainers = function () {
+    azureApis.listContainers(function (result, containers) {
         if (!result) {
-            logger.error("query table failed:\n %s", util.inspect(object));
+            logger.error(util.format('request for Listing Containers fail:\n %s', containers));
             return;
         }
+        logger.info(util.format('total %d containers', containers.length));
 
-        var entities = object.value;
-        var dateNow = new Date();
-        entities.sort(function (entry1, entry2) {
-            return entry1.RowKey - entry2.RowKey;
-        });
-
-        logger.info(util.format("found %d entities", entities.length));
-
-        // verify if there are blobs not in the table
-        azureApis.listContainers(function (result, containers) {
-            if (!result) {
-                logger.error(util.format('request for Listing Containers fail:\n %s', containers));
-            } else if (containers) {
-                logger.info(util.format('total %d containers', containers.length));
-                containers.forEach(function (container) {
-                    azureApis.listBlobs({ container: container.Name }, function (result, blobs) {
-                        if (!result) {
-                            logger.error(util.format('request for Listing blobs fail:\n %s', blobs));
-                        } else if (blobs) {
-                            logger.info(util.format('%d blobs in container %s', blobs.length, container.Name));
-                            blobs.forEach(function (blob) {
-                                // search the corresponding table entry
-                                var found = binarySearch(entities, blob, function (blob, entity) {
-                                    // compare the hashcode
-                                    return blob.Name - entity.RowKey;
-                                });
-
-                                if (found === -1 || dateNow - new Date(entities[found].CreateDate) > expiredTimeSpan) {
-                                    // not found the entry or the file is expired
-                                    logger.info(util.format('file entry for blob %s/%s is not found or expired. would be deleted', container.Name, blob.Name));
-                                    azureApis.deleteBlob({ container: container.Name, blob: blob.Name }, function (result) {
-                                        if (result) {
-                                            logger.info(util.format('file blob %s delete succeeded', blob.Name));
-                                        } else {
-                                            logger.error(util.format('file blob %s delete failed', blob.Name));
-                                        }
-                                    });
-
-                                    if (found) {
-                                        var entity = entities[found];
-                                        deleteEntity(tableInfo.tableName, entity);
-                                    }
-                                } else {
-                                    logger.trace(util.format('blob %s/%s is found in the entry', container.Name, blob.Name));
-                                }
-                            });
-                        }
-                    });
-                });
-            }
-        });
-
-        entities.forEach(function (entity) {
-            // logger.info(util.format('found entity:\n%s', util.inspect(entity)));
-            azureApis.getBlobProperties({
-                container: entity.FilePath,
-                blob: entity.RowKey
-            }, function (result, headers) {
-                if (!result) {
-                    logger.info('file %s (%s) is not found, entity is to be deleted', entity.RowKey, entity.FileName);
-                    deleteEntity(tableInfo.tableName, entity);
-                }
-            });
-        });
+        checkContainerOneByOne(containers, 0, end);
     });
+};
 
-    setTimeout(run, runInterval);
-    logger.info(util.format('waiting for %d minutes to restart...', Math.floor(runInterval / msPerMinute)));
-}
+var checkContainerOneByOne = function (containers, index, next) {
+    if (index >= containers.length) {
+        return next();
+    }
+    var container = containers[index];
+    azureApis.listBlobs({
+        container: container.Name
+    }, function (result, blobs) {
+        checkBlobs(container, result, blobs);
+        checkContainerOneByOne(containers, index + 1, next);
+    });
+};
 
-run();
+var checkBlobs = function (container, result, blobs) {
+    if (!result) {
+        logger.error(util.format('request for Listing blobs fail:\n %s', blobs));
+        return;
+    }
+    logger.info(util.format('%d blobs in container %s', blobs.length, container.Name));
+    checkBlobOneByOne(container.Name, blobs, 0);
+};
+
+var checkBlobOneByOne = function (containerName, blobs, index) {
+    if (index >= blobs.length) {
+        return;
+    }
+    var blob = blobs[index];
+    azureApis.queryEntities({
+        table: table,
+        PartitionKey: tableInfo.generatePartitionKey(blob.Name),
+        RowKey: blob.Name
+    }, function (result, entity) {
+        checkBlobExpired(containerName, blob, result, entity);
+        checkBlobOneByOne(containerName, blobs, index + 1);
+    });
+};
+
+var checkBlobExpired = function (containerName, blob, result, entity) {
+    var dateNow = new Date();
+    var createDate = new Date(blob.Properties['Last-Modified']);
+    if (!result) {
+        // not found entity
+        if (dateNow - createDate < creationDelay) {
+            logger.info(util.format('file blob %s/%s is just created, will check table entry next time', containerName, blob.Name));
+            return;
+        }
+        logger.info(util.format('file entry for blob %s/%s is not found, would be deleted', containerName, blob.Name));
+        deleteBlob(containerName, blob.Name);
+    } else if (dateNow - createDate > expiredTimeSpan) {
+        // expired
+        logger.info('file %s/%s (%s) is expired, would be deleted', containerName, blob.Name, entity.FileName);
+        deleteBlob(containerName, blob.Name);
+    }
+};
+
+start();

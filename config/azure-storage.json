@@ -24,7 +24,8 @@
     
   "fileInfoTable": "fileinfo",
   "maxFilesPerUser": 100,
-  "expiredPeriod": 24,   
-  
-  "runInterval": 15
+
+  "expiredPeriodInHour": 24,
+  "runIntervalInMin": 1,
+  "creationDelayInSec": 200
 }

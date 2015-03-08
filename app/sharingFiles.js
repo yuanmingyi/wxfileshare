@@ -7,8 +7,12 @@ var sharingFiles = (function () {
     var tableInfo = require(__dirname + '/azure-utilities/tableDef');
     var logger = require(__dirname + '/logger').logger();
     var config = require(__dirname + '/config').load("azure-storage");
-    var blobSvc = azure.createBlobService(config.account, config.primaryKey, config.endPoints.blob);
-    var tableSvc = azure.createTableService(config.account, config.primaryKey, config.endPoints.table);
+
+    var useEmulator = process.env.EMULATED;
+    var blobSvc = useEmulator ?
+    azure.createBlobService() : azure.createBlobService(config.account, config.primaryKey, config.endPoints.blob);
+    var tableSvc = useEmulator ?
+    azure.createTableService() : azure.createTableService(config.account, config.primaryKey, config.endPoints.table);
 
     tableSvc.createTableIfNotExists(tableInfo.tableName, function (err, result) {
         if (err) {

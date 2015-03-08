@@ -5,12 +5,13 @@ var util = require('util');
 var crypto = require('crypto');
 var parseXml = require('xml2js').parseString;
 var logger = require(__dirname + '/../logger').logger();
+var utilities = require(__dirname + '/../utilities');
 
 var __debug = process.env.__DEBUG;
-var __use_emulator = process.env.__AZURE_STORAGE_EMULATOR;
+var __use_emulator = process.env.EMULATED;
 
-var config = require(__dirname + "/../config").load(__use_emulator ? "azure-storage-emulator" : "azure-storage");
-var clientId = process.env.WEBJOBS_NAME || "wxfileservice";
+var config = require(__dirname + "/../config").load("azure-storage");
+var clientId = process.env.WEBJOBS_NAME || "wxfs";
 
 if (__use_emulator) {
     logger.info('USE AZURE STORAGE EMULATOR');
@@ -76,10 +77,7 @@ function constructHeadersWithoutAuth(type, version, date, cid, data) {
     var headers = {
         'x-ms-version': version,
         'x-ms-date': date,
-        'x-ms-client-request-id': cid,
-        'Accept': 'application/json;odata=nometadata',
-        'Accept-Charset': 'UTF-8',
-        'Prefer': 'return-no-content'
+        'x-ms-client-request-id': cid
     };
 
     if (type === 'table') {
@@ -223,7 +221,7 @@ exports.restApis = function (protocol) {
                 pathWithParams = '/' + config.account + pathWithParams;
             }
 
-            var headers = constructHeadersWithoutAuth(type, config.version, new Date().toUTCString(), clientId, dataSent);
+            var headers = constructHeadersWithoutAuth(type, config.version, new Date().toUTCString(), clientId + utilities.guid(), dataSent);
             if (makeHeaderFunction) {
                 makeHeaderFunction(headers);
             }
@@ -447,7 +445,10 @@ exports.restApis = function (protocol) {
     //         represents the entity to be deleted
     // onComplete: function (result, entities), callback to be invoked when the response returns.
     //         result is true if succeeded. and entities is the query result object
-    createTableApi('queryEntities', 'GET', null, function (params) {
+    createTableApi('queryEntities', 'GET', function (headers) {
+        headers['Accept'] = 'application/json;odata=nometadata';
+        headers['Accept-Charset'] = 'UTF-8';
+    }, function (params) {
         var path = '/' + params.table;
         var query = '';
 
@@ -502,7 +503,11 @@ exports.restApis = function (protocol) {
     // onComplete: function (result), callback to be invoked when the response returns. result is true if succeeded.
     (function () {
         var tableName;
-        createTableApi('createTable', 'POST', null, function (param) {
+        createTableApi('createTable', 'POST', function (headers) {
+            headers['Accept'] = 'application/json;odata=nometadata';
+            headers['Accept-Charset'] = 'UTF-8';
+            headers['Prefer'] = 'return-no-content';
+        }, function (param) {
             tableName = param;
             return '/Tables';
         }, function () {
@@ -520,7 +525,9 @@ exports.restApis = function (protocol) {
     // usage: deleteTable(tableName, onComplete)
     // tableName: string name of the table to be deleted
     // onComplete: function (result), callback to be invoked when the response returns. result is true if succeeded.
-    createTableApi('deleteTable', 'DELETE', null, function (tableName) {
+    createTableApi('deleteTable', 'DELETE', function (headers) {
+        headers['Content-Type'] = 'application/atom+xml';
+    }, function (tableName) {
         return "/Tables('" + tableName + "')";
     }, null, function (err, res, data, callback) {
         // 201 means created and 204 means no content
@@ -534,7 +541,10 @@ exports.restApis = function (protocol) {
     // usage: queryTables(onComplete)
     // onComplete (optional): function (result, tables), callback to be invoked when the response returns.
     //         result is true if succeeded. and tables is the query result object
-    createTableApi('queryTables', 'GET', null, function () {
+    createTableApi('queryTables', 'GET', function (headers) {
+        headers['Accept'] = 'application/json;odata=nometadata';
+        headers['Accept-Charset'] = 'UTF-8';
+    }, function () {
         return '/Tables';
     }, null, function (err, res, data, callback) {
         var result = !err && (res.statusCode === 200);
@@ -548,7 +558,8 @@ exports.restApis = function (protocol) {
     // tableName: string name of the table
     // entityObject: object represents the entity, must contains "PartitionKey" and "RowKey" properties of string type
     // onComplete: function (result), callback to be invoked when the response returns. result is true if succeeded.
-    createTableApi('insertEntity', 'POST', null, function (tableName) {
+    createTableApi('insertEntity', 'POST', function (headers) {
+    }, function (tableName) {
         return '/' + tableName;
     }, function (entityObject) {
         return entityObject;
