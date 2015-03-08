@@ -36,6 +36,16 @@ function binarySearch(arr, obj, compare) {
     return -1;
 }
 
+var deleteEntity = function (tableName, entity) {
+    azureApis.deleteEntity({ table: tableName, PartitionKey: entity.PartitionKey, RowKey: entity.RowKey }, function (result) {
+        if (result) {
+            logger.info(util.format('entity %s (%s) delete succeeded', entity.RowKey, entity.FileNam));
+        } else {
+            logger.error(util.format('entity %s (%s) delete failed', entity.RowKey, entity.FileName));
+        }
+    });
+}
+
 //list all the container in the storage
 function run() {
     logger.info('start scanning...');
@@ -88,13 +98,7 @@ function run() {
 
                                     if (found) {
                                         var entity = entities[found];
-                                        azureApis.deleteEntity({ table: tableInfo.tableName, partitionKey: entity.PartitionKey, rowKey: entity.RowKey }, function (result) {
-                                            if (result) {
-                                                logger.info(util.format('entity %s (%s) delete succeeded', entity.RowKey, entity.FileName));
-                                            } else {
-                                                logger.error(util.format('entity %s (%s) delete failed', entity.RowKey, entity.FileName));
-                                            }
-                                        });
+                                        deleteEntity(tableInfo.tableName, entity);
                                     }
                                 } else {
                                     logger.trace(util.format('blob %s/%s is found in the entry', container.Name, blob.Name));
@@ -111,16 +115,10 @@ function run() {
             azureApis.getBlobProperties({
                 container: entity.FilePath,
                 blob: entity.RowKey
-            }, function (headers) {
-                if (!headers) {
+            }, function (result, headers) {
+                if (!result) {
                     logger.info('file %s (%s) is not found, entity is to be deleted', entity.RowKey, entity.FileName);
-                    azureApis.deleteEntity({ table: tableInfo.tableName, partitionKey: entity.PartitionKey, rowKey: entity.RowKey }, function (result) {
-                        if (result) {
-                            logger.info(util.format('entity %s delete succeeded', util.inspect(entity)));
-                        } else {
-                            logger.error(util.format('entity %s delete failed', util.inspect(entity)));
-                        }
-                    });
+                    deleteEntity(tableInfo.tableName, entity);
                 }
             });
         });

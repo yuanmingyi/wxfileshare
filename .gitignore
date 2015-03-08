@@ -2,3 +2,4 @@
 /node_modules
 /iisnode
 /logs
+/App_Data/jobs/continuous/MaintainSharedFiles/logs

@@ -72,7 +72,7 @@ function constructCanonicalizedResource(options) {
     return canonicalizedResourceString;
 }
 
-function constructHeadersWithoutAuth(version, date, cid) {
+function constructHeadersWithoutAuth(type, version, date, cid, data) {
     var headers = {
         'x-ms-version': version,
         'x-ms-date': date,
@@ -81,6 +81,20 @@ function constructHeadersWithoutAuth(version, date, cid) {
         'Accept-Charset': 'UTF-8',
         'Prefer': 'return-no-content'
     };
+
+    if (type === 'table') {
+        headers['DataServiceVersion'] = config.dataServiceVersion;
+        headers['MaxDataServiceVersion'] = config.maxDataServiceVersion;
+    }
+
+    if (data && typeof data === 'object') {
+        // data is json
+        headers['Content-Type'] = 'application/json';
+        headers['Content-Length'] = JSON.stringify(data).length;
+    } else if (data && typeof data === 'string') {
+        headers['Content-Type'] = 'application/atom+xml';
+        headers['Content-Length'] = data.length;
+    }
 
     return headers;
 }
@@ -143,24 +157,8 @@ var getTypeFromHost = function (host) {
 
 // compose the REST API request headers to the azure storage,
 // refer to https://msdn.microsoft.com/en-us/library/azure/dd179428.aspx
-var azureRequest = exports.request = function (type, method, host, data, path, port, callback) {
+var azureRequest = exports.request = function (type, method, host, headers, path, port, callback) {
     var protocol = (port === 443 ? https : http);
-    var headers = constructHeadersWithoutAuth(config.version, (new Date()).toUTCString(), clientId);
-
-    if (type === 'table') {
-        headers['DataServiceVersion'] = config.dataServiceVersion;
-        headers['MaxDataServiceVersion'] = config.maxDataServiceVersion;
-    }
-
-    if (data && typeof data === 'object') {
-        // data is json
-        headers['Content-Type'] = 'application/json';
-        headers['Content-Length'] = JSON.stringify(data).length;
-    } else if (data && typeof data === 'string') {
-        headers['Content-Type'] = 'application/atom+xml';
-        headers['Content-Length'] = data.length;
-    }
-
     var options = {
         method: method,
         hostname: host,
@@ -191,7 +189,7 @@ exports.restApis = function (protocol) {
     var defaultEncoding = 'utf8';
 
     // create the rest api.
-    var createApi = function (apiName, type, method, host, makePathFunction, makeDataFunction, responseHandler) {
+    var createApi = function (apiName, type, method, host, makeHeaderFunction, makePathFunction, makeDataFunction, responseHandler) {
         // the return function has three parameters:
         // (params, data, userCallback)
         // the params and data are optional, and the userCallback is required
@@ -225,7 +223,11 @@ exports.restApis = function (protocol) {
                 pathWithParams = '/' + config.account + pathWithParams;
             }
 
-            var req = azureRequest(type, method, actualHost, dataSent, pathWithParams, port, function (res) {
+            var headers = constructHeadersWithoutAuth(type, config.version, new Date().toUTCString(), clientId, dataSent);
+            if (makeHeaderFunction) {
+                makeHeaderFunction(headers);
+            }
+            var req = azureRequest(type, method, actualHost, headers, pathWithParams, port, function (res) {
                 var output = [];
                 var length = 0;
 
@@ -259,16 +261,16 @@ exports.restApis = function (protocol) {
     };
 
     // create rest api for storage type
-    var createBlobApi = function (apiName, method, makePathFunction, makeDataFunction, responseHandler) {
-        createApi(apiName, 'blob', method, config.hosts.blob, makePathFunction, makeDataFunction, responseHandler);
+    var createBlobApi = function (apiName, method, makeHeaderFunction, makePathFunction, makeDataFunction, responseHandler) {
+        createApi(apiName, 'blob', method, config.hosts.blob, makeHeaderFunction, makePathFunction, makeDataFunction, responseHandler);
     };
 
-    var createTableApi = function (apiName, method, makePathFunction, makeDataFunction, responseHandler) {
-        createApi(apiName, 'table', method, config.hosts.table, makePathFunction, makeDataFunction, responseHandler);
+    var createTableApi = function (apiName, method, makeHeaderFunction, makePathFunction, makeDataFunction, responseHandler) {
+        createApi(apiName, 'table', method, config.hosts.table, makeHeaderFunction, makePathFunction, makeDataFunction, responseHandler);
     };
 
-    var createQueueApi = function (apiName, method, makePathFunction, makeDataFunction, responseHandler) {
-        createApi(apiName, 'queue', method, config.hosts.queue, makePathFunction, makeDataFunction, responseHandler);
+    var createQueueApi = function (apiName, method, makeHeaderFunction, makePathFunction, makeDataFunction, responseHandler) {
+        createApi(apiName, 'queue', method, config.hosts.queue, makeHeaderFunction, makePathFunction, makeDataFunction, responseHandler);
     };
 
     // usage: listContainers(params, onComplete)
@@ -276,9 +278,9 @@ exports.restApis = function (protocol) {
     //           'timeout': timeout in second (optional and default is 60s)
     //           *other parameters* (optional and refered to msdn)
     //         }
-    // onComplete (optional): function (result, containers), callback to be invoked when the response returns.
+    // onComplete: function (result, containers), callback to be invoked when the response returns.
     //         result is true if succeeded. containers is the object array containing all the containers' info.
-    createBlobApi('listContainers', 'GET', function (params) {
+    createBlobApi('listContainers', 'GET', null, function (params) {
         var path = '/?comp=list';
         var timeout = 60;
         for (var k in params) {
@@ -316,7 +318,7 @@ exports.restApis = function (protocol) {
                     callback(result, object);
                 }
             });
-        } else if (callback) {
+        } else {
             callback(result, data.toString(defaultEncoding));
         }
     });
@@ -327,8 +329,8 @@ exports.restApis = function (protocol) {
     //           'timeout': timeout in second (optional and default is 60s)
     //         }
     //         represents the container to be delete
-    // onComplete (optional): function (result), callback to be invoked when the response returns. result is true if succeeded
-    createBlobApi('deleteContainer', 'DELETE', function (params) {
+    // onComplete: function (result), callback to be invoked when the response returns. result is true if succeeded
+    createBlobApi('deleteContainer', 'DELETE', null, function (params) {
         var containerName = params;
         var timeout = 60;
         if (typeof params === 'object') {
@@ -341,9 +343,7 @@ exports.restApis = function (protocol) {
         if (!result) {
             logger.trace(util.format('response: %s', data.toString(defaultEncoding)));
         }
-        if (callback) {
-            callback(result);
-        }
+        callback(result);
     });
 
     // usage: listBlobs(params, onComplete)
@@ -352,9 +352,9 @@ exports.restApis = function (protocol) {
     //           'timeout': timeout in second (optional and default is 60s)
     //           *other parameters* (optional and refered to msdn)
     //         }
-    // onComplete (optional): function (result, blobs), callback to be invoked when the response returns.
+    // onComplete: function (result, blobs), callback to be invoked when the response returns.
     //         result is true if succeeded. blobs is the object array containing all the blobs' info in the container.
-    createBlobApi('listBlobs', 'GET', function (params) {
+    createBlobApi('listBlobs', 'GET', null, function (params) {
         var path = '/' + params.container + '?restype=container&comp=list';
         var timeout = 60;
         for (var k in params) {
@@ -392,7 +392,7 @@ exports.restApis = function (protocol) {
                     callback(result, object);
                 }
             });
-        } else if (callback) {
+        } else {
             callback(result, data.toString(defaultEncoding));
         }
     });
@@ -404,8 +404,8 @@ exports.restApis = function (protocol) {
     //           'timeout': timeout in second (optional and default is 60s)
     //         }
     //         represents the blob to be delete
-    // onComplete (optional): function (result), callback to be invoked when the response returns. result is true if succeeded
-    createBlobApi('deleteBlob', 'DELETE', function (params) {
+    // onComplete: function (result), callback to be invoked when the response returns. result is true if succeeded
+    createBlobApi('deleteBlob', 'DELETE', null, function (params) {
         var containerName = params.container;
         var blobName = params.blob;
         var timeout = params.timeOut || 60; // seconds
@@ -415,9 +415,7 @@ exports.restApis = function (protocol) {
         if (!result) {
             logger.trace(util.format('response: %s', data.toString(defaultEncoding)));
         }
-        if (callback) {
-            callback(result);
-        }
+        callback(result);
     });
 
     // usage: getBlobProperties(params, onComplete)
@@ -427,23 +425,16 @@ exports.restApis = function (protocol) {
     //           'timeout': timeout in second (optional and default is 60s)
     //         }
     //         represents the blob to be fetched
-    // onComplete (optional): function (properties), callback to be invoked when the response returns.
-    //         properties is the response headers which contains the properties of the blob.
-    createBlobApi('getBlobProperties', 'HEAD', function (params) {
+    // onComplete: function (result, blobs), callback to be invoked when the response returns.
+    //         result is true if succeeded. properties is the response headers which contains the properties of the blob.
+    createBlobApi('getBlobProperties', 'HEAD', null, function (params) {
         var containerName = params.container;
         var blobName = params.blob;
         var timeout = params.timeOut || 60; // seconds
         return '/' + containerName + '/' + blobName + '?timeout=' + timeout;
     }, null, function (err, res, data, callback) {
         var result = !err && res.statusCode === 200;
-        var properties = res.headers;
-        if (!result) {
-            logger.trace('response: %s', data.toString(defaultEncoding));
-            properties = [];
-        }
-        if (callback) {
-            callback(properties);
-        }
+        callback(result, res.headers);
     });
 
     // usage: queryEntities(params, onComplete)
@@ -454,9 +445,9 @@ exports.restApis = function (protocol) {
     //          'query': query parameters       (used to compose the query string, does not work currently)
     //         }
     //         represents the entity to be deleted
-    // onComplete (optional): function (result, entities), callback to be invoked when the response returns.
+    // onComplete: function (result, entities), callback to be invoked when the response returns.
     //         result is true if succeeded. and entities is the query result object
-    createTableApi('queryEntities', 'GET', function (params) {
+    createTableApi('queryEntities', 'GET', null, function (params) {
         var path = '/' + params.table;
         var query = '';
 
@@ -484,36 +475,34 @@ exports.restApis = function (protocol) {
     }, null, function (err, res, data, callback) {
         var result = !err && res.statusCode === 200;
         var text = data.toString(defaultEncoding);
-        if (callback) {
-            callback(result, result ? JSON.parse(text) : text);
-        }
+        callback(result, result ? JSON.parse(text) : text);
     });
 
     // usage: deleteEntity(params, onComplete)
     // params: object { 'table': tablename, 'partitionKey': PartitionKey, 'rowKey': RowKey } represents the entity to be deleted
-    // onComplete (optional): function (result), callback to be invoked when the response returns. result is true if succeeded.
-    createTableApi('deleteEntity', 'DELETE', function (params) {
+    // onComplete: function (result), callback to be invoked when the response returns. result is true if succeeded.
+    createTableApi('deleteEntity', 'DELETE', function (headers) {
+        headers['If-Match'] = '*';
+    }, function (params) {
         var table = params.table;
-        var partitionKey = params.partitionKey;
-        var rowKey = params.rowKey;
-        return util.format("/%s(PartitionKey='%s', RowKey='%s')", partitionKey, rowKey);
+        var partitionKey = params.PartitionKey;
+        var rowKey = params.RowKey;
+        return util.format("/%s(PartitionKey='%s',RowKey='%s')", table, partitionKey, rowKey);
     }, null, function (err, res, data, callback) {
         // 204 means no content (successful)
         var result = !err && (res.statusCode === 204);
         if (!result) {
             logger.trace(util.format('response: %s', data.toString(defaultEncoding)));
         }
-        if (callback) {
-            callback(result);
-        }
+        callback(result);
     });
 
     // usage: createTable(tableName, onComplete)
     // tableName: string name of the table to be created
-    // onComplete (optional): function (result), callback to be invoked when the response returns. result is true if succeeded.
+    // onComplete: function (result), callback to be invoked when the response returns. result is true if succeeded.
     (function () {
         var tableName;
-        createTableApi('createTable', 'POST', function (param) {
+        createTableApi('createTable', 'POST', null, function (param) {
             tableName = param;
             return '/Tables';
         }, function () {
@@ -524,17 +513,42 @@ exports.restApis = function (protocol) {
             if (!result) {
                 logger.trace(util.format('response: %s', data.toString(defaultEncoding)));
             }
-            if (callback) {
-                callback(result);
-            }
+            callback(result);
         });
     })();
+
+    // usage: deleteTable(tableName, onComplete)
+    // tableName: string name of the table to be deleted
+    // onComplete: function (result), callback to be invoked when the response returns. result is true if succeeded.
+    createTableApi('deleteTable', 'DELETE', null, function (tableName) {
+        return "/Tables('" + tableName + "')";
+    }, null, function (err, res, data, callback) {
+        // 201 means created and 204 means no content
+        var result = !err && (res.statusCode === 204);
+        if (!result) {
+            logger.trace(util.format('response: %s', data.toString(defaultEncoding)));
+        }
+        callback(result);
+    });
+
+    // usage: queryTables(onComplete)
+    // onComplete (optional): function (result, tables), callback to be invoked when the response returns.
+    //         result is true if succeeded. and tables is the query result object
+    createTableApi('queryTables', 'GET', null, function () {
+        return '/Tables';
+    }, null, function (err, res, data, callback) {
+        var result = !err && (res.statusCode === 200);
+        var text = data.toString(defaultEncoding);
+        if (callback) {
+            callback(result, result ? JSON.parse(text) : text);
+        }
+    });
 
     // usage: insertEntity(tableName, entityObject, onComplete)
     // tableName: string name of the table
     // entityObject: object represents the entity, must contains "PartitionKey" and "RowKey" properties of string type
-    // onComplete (optional): function (result), callback to be invoked when the response returns. result is true if succeeded.
-    createTableApi('insertEntity', 'POST', function (tableName) {
+    // onComplete: function (result), callback to be invoked when the response returns. result is true if succeeded.
+    createTableApi('insertEntity', 'POST', null, function (tableName) {
         return '/' + tableName;
     }, function (entityObject) {
         return entityObject;
@@ -544,9 +558,7 @@ exports.restApis = function (protocol) {
         if (!result) {
             logger.trace(util.format('response: %s', data.toString(defaultEncoding)));
         }
-        if (callback) {
-            callback(result);
-        }
+        callback(result);
     });
 
     return obj;
