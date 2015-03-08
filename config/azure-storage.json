@@ -26,6 +26,6 @@
   "maxFilesPerUser": 100,
 
   "expiredPeriodInHour": 24,
-  "runIntervalInMin": 1,
+  "runIntervalInMin": 15,
   "creationDelayInSec": 200
 }
