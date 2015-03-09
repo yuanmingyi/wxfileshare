@@ -1,5 +1,5 @@
 {
-    "maxFileSize": 10485760,
+    "maxFileSize": 104857600,
     "connectionTimeout": 180,
     "defaultPort": 1337,
     "route": {

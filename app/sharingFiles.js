@@ -126,10 +126,10 @@ var sharingFiles = (function () {
         tableSvc.queryEntities(tableInfo.tableName, infoTableQuery, null, { timeoutIntervalInMs: timeout * 1000 }, function (err, result) {
             if (err) {
                 logger.error(util.format('query file info table for userid failed!\n%s', util.inspect(err)));
-                callback([]);
+                callback(false, []);
             } else {
                 logger.trace(util.format('file info for userid %s are queried', userid));
-                callback(tableInfo.entities2filesInfo(result.entries));
+                callback(true, tableInfo.entities2filesInfo(result.entries));
             }
         });
     };
@@ -154,6 +154,25 @@ var sharingFiles = (function () {
         });
     };
 
+    obj.writeToStream = function (path, hashcode, writableStream, timeout, complete) {
+        logger.trace('>>> start sharingFiles.writeToStream');
+
+        if (typeof timeout === 'function' || typeof timeout === 'undefined') {
+            complete = timeout;
+            timeout = 120;  // seconds
+        }
+
+        blobSvc.getBlobToStream(path, hashcode, writableStream, { timeoutIntervalInMs: timeout * 1000 }, function (err, blob) {
+            if (err) {
+                logger.error(util.format("write blob to stream failed: %s", util.inspect(err)));
+                complete(false);
+            } else {
+                logger.info('write blob succeeded');
+                complete(true, blob);
+            }
+        });
+    };
+
     obj.downloadStream = function (path, hashcode, timeout, complete) {
         logger.trace('>>> start sharingFiles.downloadStream');
 
@@ -165,11 +184,10 @@ var sharingFiles = (function () {
         return blobSvc.createReadStream(path, hashcode, { timeoutIntervalInMs: timeout * 1000 }, function (err, result) {
             if (err) {
                 logger.error("create readable stream failed!\n" + util.inspect(err));
-            }
-
-            logger.trace('read stream is created');
-            if (complete) {
-                complete(err ? false : true);
+                complete(false);
+            } else {
+                logger.info('read stream is created');
+                complete(true);
             }
         });
     };
