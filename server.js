@@ -133,22 +133,25 @@ app.get(config.route.download + ":hashcode", function (req, res) {
         if (result) {
             logger.trace(util.format('fileinfo:\n%s', util.inspect(fileinfo)));
 
-            sharingFiles.downloadBlob(fileinfo.path, hashcode, function (result, localpath) {
-                if (!result) {
-                    res.send(500, 'download failed');
-                } else {
-                    //res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
-                    res.download(localpath, fileinfo.fileName, function (err) {
-                        if (err) {
-                            utilities.sendSafeResponse(res, 500, 'download failed');
-                        } else {
-                            logger.info('download successfully');
-                            fs.unlinkSync(localpath);
-                            logger.info(util.format('remove local file cache %s successfully', fileinfo.Name));
-                        }
-                    });
-                }
-            });
+            //sharingFiles.downloadBlob(fileinfo.path, hashcode, function (result, localpath) {
+            //    if (!result) {
+            //        res.send(500, 'download failed');
+            //    } else {
+            //        //res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
+            //        res.download(localpath, fileinfo.fileName, function (err) {
+            //            if (err) {
+            //                utilities.sendSafeResponse(res, 500, 'download failed');
+            //            } else {
+            //                logger.info('download successfully');
+            //                fs.unlinkSync(localpath);
+            //                logger.info(util.format('remove local file cache %s successfully', fileinfo.Name));
+            //            }
+            //        });
+            //    }
+            //});
+
+            var url = sharingFiles.getDownloadUrl(fileinfo.path, hashcode);
+            res.redirect(url);
 
             // only for text file
             //sharingFiles.getBlobContent(fileinfo.path, hashcode, function (result, text, blob) {

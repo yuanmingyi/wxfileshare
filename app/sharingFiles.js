@@ -179,8 +179,8 @@ var sharingFiles = (function () {
                 Expiry: azure.date.hoursFromNow(config.expiredPeriodInHour)
             }
         };
-        var sasToken = blobService.generateSharedAccessSignature(path, hashcode, sap);
-        return blobService.getUrl(path, hashcode, sasToken, true);
+        var sasToken = blobSvc.generateSharedAccessSignature(path, hashcode, sap);
+        return blobSvc.getUrl(path, hashcode, null, true);
     };
 
     obj.getBlobText = function (path, hashcode, timeout, complete) {
