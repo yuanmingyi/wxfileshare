@@ -174,12 +174,6 @@ var sharingFiles = (function () {
     };
 
     obj.getDownloadUrl = function (path, hashcode) {
-        var sap = {
-            AccessPolicy: {
-                Expiry: azure.date.hoursFromNow(config.expiredPeriodInHour)
-            }
-        };
-        var sasToken = blobSvc.generateSharedAccessSignature(path, hashcode, sap);
         return blobSvc.getUrl(path, hashcode, null, true);
     };
 
