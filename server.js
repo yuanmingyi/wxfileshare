@@ -137,7 +137,7 @@ app.get(config.route.download + ":hashcode", function (req, res) {
             //    if (!result) {
             //        res.send(500, 'download failed');
             //    } else {
-            //        //res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
+            //        // res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
             //        res.download(localpath, fileinfo.fileName, function (err) {
             //            if (err) {
             //                utilities.sendSafeResponse(res, 500, 'download failed');
@@ -146,6 +146,7 @@ app.get(config.route.download + ":hashcode", function (req, res) {
             //                fs.unlinkSync(localpath);
             //                logger.info(util.format('remove local file cache %s successfully', fileinfo.Name));
             //            }
+            //            logger.info(util.format('headers:\n%s', util.inspect(res._headers)));
             //        });
             //    }
             //});
@@ -163,7 +164,9 @@ app.get(config.route.download + ":hashcode", function (req, res) {
             //    }
             //});
 
-            res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
+            //res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
+            res.attachment(fileinfo.fileName);
+            // logger.info(util.format('headers:\n%s', util.inspect(res._headers)));
             sharingFiles.writeToStream(fileinfo.path, hashcode, res, function (result, blob) {
                 if (!result) {
                     utilities.sendSafeResponse(res, 500, 'download failed');
