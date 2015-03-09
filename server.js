@@ -115,7 +115,7 @@ app.get(config.route.show + ':code', function (req, res) {
     }
     sharingFiles.sharedFiles(userid, function (result, fileList) {
         if (!result) {
-            res.status(404).send('No files found');
+            res.send(404, 'No files found');
             return;
         }
         fileList.forEach(function (file) {
@@ -131,13 +131,40 @@ app.get(config.route.download + ":hashcode", function (req, res) {
     var hashcode = req.params.hashcode;
     sharingFiles.fileInfo(hashcode, function (result, fileinfo) {
         if (result) {
-            // logger.trace(util.format('fileinfo:\n%s', util.inspect(fileinfo)));
-            res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
-            sharingFiles.writeToStream(fileinfo.path, hashcode, res, function (result, blob) {
+            logger.trace(util.format('fileinfo:\n%s', util.inspect(fileinfo)));
+
+            sharingFiles.downloadBlob(fileinfo.path, hashcode, function (result, localpath) {
                 if (!result) {
-                    utilities.sendSafeResponse(res, 500, 'download failed');
+                    res.send(500, 'download failed');
+                } else {
+                    //res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
+                    res.download(localpath, fileinfo.fileName, function (err) {
+                        if (err) {
+                            utilities.sendSafeResponse(res, 500, 'download failed');
+                        } else {
+                            logger.info('download successfully');
+                            fs.unlinkSync(localpath);
+                            logger.info(util.format('remove local file cache %s successfully', fileinfo.Name));
+                        }
+                    });
                 }
             });
+
+            // only for text file
+            //sharingFiles.getBlobContent(fileinfo.path, hashcode, function (result, text, blob) {
+            //    if (!result) {
+            //        res.send(500, 'download failed');
+            //    } else {
+            //        res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
+            //        res.send(text);
+            //    }
+            //});
+
+            //sharingFiles.writeToStream(fileinfo.path, hashcode, res, function (result, blob) {
+            //    if (!result) {
+            //        utilities.sendSafeResponse(res, 500, 'download failed');
+            //    }
+            //});
 
             //var downloadStream = sharingFiles.downloadStream(fileinfo.path, hashcode, function (result) {
             //    if (!result) {
@@ -151,7 +178,7 @@ app.get(config.route.download + ":hashcode", function (req, res) {
             //    log.error(util.format('Exception:\n%s', util.inspect(ex)));
             //}
         } else {
-            res.status(500).send("Unable to fetch the file information");
+            res.send(500, "Unable to fetch the file information");
         }
     });
 });

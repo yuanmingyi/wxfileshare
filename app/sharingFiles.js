@@ -173,6 +173,55 @@ var sharingFiles = (function () {
         });
     };
 
+    obj.getDownloadUrl = function (path, hashcode) {
+        var sap = {
+            AccessPolicy: {
+                Expiry: azure.date.hoursFromNow(config.expiredPeriodInHour)
+            }
+        };
+        var sasToken = blobService.generateSharedAccessSignature(path, hashcode, sap);
+        return blobService.getUrl(path, hashcode, sasToken, true);
+    };
+
+    obj.getBlobText = function (path, hashcode, timeout, complete) {
+        logger.trace('>>> start sharingFiles.getBlobContent');
+
+        if (typeof timeout === 'function' || typeof timeout === 'undefined') {
+            complete = timeout;
+            timeout = 120;  // seconds
+        }
+
+        blobSvc.getBlobToText(path, hashcode, { timeoutIntervalInMs: timeout * 1000 }, function (err, text, blob, res) {
+            if (err) {
+                logger.error(util.format('getBlobToText failed: %s', util.inspect(err)));
+                complete(false);
+            } else {
+                logger.info('getBlobToText successfully');
+                complete(true, text, blob);
+            }
+        });
+    };
+
+    obj.downloadBlob = function (path, hashcode, timeout, complete) {
+        logger.trace('>>> start sharingFiles.downloadBlob');
+
+        if (typeof timeout === 'function' || typeof timeout === 'undefined') {
+            complete = timeout;
+            timeout = 120;  // seconds
+        }
+
+        var filePath = __dirname + '/../tmp/' + hashcode;
+        return blobSvc.getBlobToLocalFile(path, hashcode, filePath, { timeoutIntervalInMs: timeout * 1000 }, function (err, result) {
+            if (err) {
+                logger.error(util.format("download to local file failed!\n%s", util.inspect(err)));
+                complete(false);
+            } else {
+                logger.info('download to local file successfully');
+                complete(true, filePath);
+            }
+        });
+    };
+
     obj.downloadStream = function (path, hashcode, timeout, complete) {
         logger.trace('>>> start sharingFiles.downloadStream');
 
