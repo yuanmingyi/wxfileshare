@@ -77,7 +77,7 @@ obj.composeDownloadHtmlHeaders = function (fileInfo) {
     };
     return {
         'Content-Type': contentType,
-        'Content-Disposition': 'attachment; filename="' + basename + ext.toUpperCase() + '"'
+        'Content-Disposition': 'attachment; filename="' + fileInfo.fileName + '"'
     }
 };
 

@@ -150,8 +150,8 @@ app.get(config.route.download + ":hashcode", function (req, res) {
             //    }
             //});
 
-            var url = sharingFiles.getDownloadUrl(fileinfo.path, hashcode);
-            res.redirect(url);
+            //var url = sharingFiles.getDownloadUrl(fileinfo.path, hashcode);
+            //res.redirect(url);
 
             // only for text file
             //sharingFiles.getBlobContent(fileinfo.path, hashcode, function (result, text, blob) {
@@ -163,11 +163,12 @@ app.get(config.route.download + ":hashcode", function (req, res) {
             //    }
             //});
 
-            //sharingFiles.writeToStream(fileinfo.path, hashcode, res, function (result, blob) {
-            //    if (!result) {
-            //        utilities.sendSafeResponse(res, 500, 'download failed');
-            //    }
-            //});
+            res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
+            sharingFiles.writeToStream(fileinfo.path, hashcode, res, function (result, blob) {
+                if (!result) {
+                    utilities.sendSafeResponse(res, 500, 'download failed');
+                }
+            });
 
             //var downloadStream = sharingFiles.downloadStream(fileinfo.path, hashcode, function (result) {
             //    if (!result) {
