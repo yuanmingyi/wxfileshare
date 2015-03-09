@@ -133,57 +133,13 @@ app.get(config.route.download + ":hashcode", function (req, res) {
         if (result) {
             logger.trace(util.format('fileinfo:\n%s', util.inspect(fileinfo)));
 
-            //sharingFiles.downloadBlob(fileinfo.path, hashcode, function (result, localpath) {
-            //    if (!result) {
-            //        res.send(500, 'download failed');
-            //    } else {
-            //        // res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
-            //        res.download(localpath, fileinfo.fileName, function (err) {
-            //            if (err) {
-            //                utilities.sendSafeResponse(res, 500, 'download failed');
-            //            } else {
-            //                logger.info('download successfully');
-            //                fs.unlinkSync(localpath);
-            //                logger.info(util.format('remove local file cache %s successfully', fileinfo.Name));
-            //            }
-            //            logger.info(util.format('headers:\n%s', util.inspect(res._headers)));
-            //        });
-            //    }
-            //});
-
-            //var url = sharingFiles.getDownloadUrl(fileinfo.path, hashcode);
-            //res.redirect(url);
-
-            // only for text file
-            //sharingFiles.getBlobContent(fileinfo.path, hashcode, function (result, text, blob) {
-            //    if (!result) {
-            //        res.send(500, 'download failed');
-            //    } else {
-            //        res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
-            //        res.send(text);
-            //    }
-            //});
-
-            //res.set(utilities.composeDownloadHtmlHeaders(fileinfo));
             res.attachment(fileinfo.fileName);
-            // logger.info(util.format('headers:\n%s', util.inspect(res._headers)));
             sharingFiles.writeToStream(fileinfo.path, hashcode, res, function (result, blob) {
                 if (!result) {
                     utilities.sendSafeResponse(res, 500, 'download failed');
                 }
             });
 
-            //var downloadStream = sharingFiles.downloadStream(fileinfo.path, hashcode, function (result) {
-            //    if (!result) {
-            //        res.status(500).send("Unable to download the file");
-            //    }
-            //});
-            //try {
-            //    downloadStream.pipe(res);
-            //}
-            //catch (ex) {
-            //    log.error(util.format('Exception:\n%s', util.inspect(ex)));
-            //}
         } else {
             res.send(500, "Unable to fetch the file information");
         }

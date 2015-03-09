@@ -177,6 +177,7 @@ var sharingFiles = (function () {
         return blobSvc.getUrl(path, hashcode, null, true);
     };
 
+    // only for download text file
     obj.getBlobText = function (path, hashcode, timeout, complete) {
         logger.trace('>>> start sharingFiles.getBlobContent');
 
