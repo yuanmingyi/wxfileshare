@@ -3,6 +3,7 @@ var wxInterface = (function () {
     var config = require(__dirname + '/../config').load("wxInterface");
     var logger = require(__dirname + '/../logger').logger();
     var utilities = require(__dirname + '/../utilities');
+    var Strings = require(__dirname + '/../Strings');
 
     var util = require('util');
     var xmlParser = require('xml2js').Parser();
@@ -31,7 +32,7 @@ var wxInterface = (function () {
         });
     };
 
-    var helpDoc = '请发送upload或者u上传文件，发送show或者s获得文件下载链接，发送all或者a查看已上传的所有文件';
+    var helpDoc = Strings.WxHelpDoc;
     var processPostData = function (req, data, onComplete) {
         xml2Json(data, function (err, result) {
             var ret = 'success';
@@ -47,11 +48,11 @@ var wxInterface = (function () {
                         text = text.toLowerCase();
                         if (text.indexOf('u') === 0) {
                             // request for upload a file, return the URL of uploading page
-                            message = '请点击链接上传文件: ' + utilities.makeUploadUrl(req, userid);
+                            message = Strings.getString('WxUploadHint', utilities.makeUploadUrl(req, userid));
                         } else if (text.indexOf('s') === 0) {
                             // request for showing files that already uploaded, return all the urls of the uploaded files
                             sharingFiles.sharedFiles(userid, function (files) {
-                                message = '已上传文件:';
+                                message = Strings.WxUploadedLinks;
                                 files.sort(function (f1, f2) {
                                     return f2.createDate - f1.createDate;
                                 });
@@ -64,7 +65,7 @@ var wxInterface = (function () {
                             return;
                         } else if (text.indexOf('a') === 0) {
                             // request for showing all the files uploaded by the current user. return a url linking to a page with the file list.
-                            message = '所有上传文件：' + utilities.makeShowUrl(req, sharingFiles.fileListPageCode(userid));
+                            message = Strings.getString('WxAllUploadedLinks', utilities.makeShowUrl(req, sharingFiles.fileListPageCode(userid)));
                         } else {
                             message = helpDoc;
                         }
@@ -73,7 +74,7 @@ var wxInterface = (function () {
                     var event = result['Event'];
                     if (event === 'subscribe') {
                         // TODO: add user number
-                        message = '欢迎使用文件共享助手。' + helpDoc;
+                        message = Strings.WxWelcomeMessage;
                     } else if (event === 'unsubscribe') {
                         // TODO: reduce user number
                     }

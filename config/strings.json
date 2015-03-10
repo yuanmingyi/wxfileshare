@@ -1,0 +1,7 @@
+{
+    "WxHelpDoc": "发送消息:\nu -> 上传文件\ns -> 获得文件下载链接\na -> 查看已上传的所有文件",
+    "WxUploadHint": "上传链接: %s",
+    "WxUploadedLinks": "最近上传文件:",
+    "WxAllUploadedLinks": "所有上传文件:",
+    "WxWelcomeMessage": "欢迎使用文件共享助手\n$(WxHelpDoc)"
+}
