@@ -3,5 +3,13 @@
     "WxUploadHint": "上传链接: %s",
     "WxUploadedLinks": "最近上传文件:",
     "WxAllUploadedLinks": "所有上传文件:",
-    "WxWelcomeMessage": "欢迎使用文件共享助手\n$(WxHelpDoc)"
+    "WxWelcomeMessage": "欢迎使用文件共享助手\n$(WxHelpDoc)",
+
+    "ResUploadFailed": "Upload Failed",
+    "ResUploadFailedWithException": "Upload Failed: %s",
+    "ResBadRequest": "Bad request",
+    "ResNoFileFound": "No file found",
+    "ResGetFileInfoFailed": "Unable to fetch the file information",
+    "ResDownloadFailed": "Download failed",
+    "ResUnexpectedError": "Unexpected error occured!"
 }

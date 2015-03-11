@@ -8,6 +8,7 @@ var log = require(__dirname + '/app/logger');
 var wxInterface = require(__dirname + '/app/wx/wxInterface');
 var sharingFiles = require(__dirname + '/app/sharingFiles');
 var utilities = require(__dirname + '/app/utilities');
+var Strings = require(__dirname + '/app/Strings');
 
 var app = express();
 var logger = log.logger();
@@ -24,7 +25,7 @@ app.set('view engine', 'jade');
 
 app.use(function (err, req, res, next) {
     logger.error(err.stack);
-    res.status(500).send('Unexpected error occured!');
+    res.send(500, Strings.ResUnexpectedError);
 });
 
 // root route, default to upload
@@ -76,12 +77,12 @@ app.route(config.route.upload)
                         utilities.sendSafeResponse(res, 200, { filename: filename, url: downloadUrl, truncated: file.truncated });
                     } else {
                         logger.info("File %s upload failed", filename);
-                        utilities.sendSafeResponse(res, 500, "Upload Failed");
+                        utilities.sendSafeResponse(res, 500, Strings.ResUploadFailed);
                     }
                 });
             } catch (exception) {
                 logger.error(util.format('exception:\n%s', util.inspect(exception)));
-                utilities.sendSafeResponse(res, 500, util.format("Upload Failed: %s", exception.message));
+                utilities.sendSafeResponse(res, 500, Strings.getString("ResUploadFailedMessage", exception.message));
             }
         });
     });
@@ -108,14 +109,14 @@ app.get(config.route.show + ':code', function (req, res) {
     var code = req.params.code;
     var userid = sharingFiles.parseFileListPageCode(code);
     if (userid === '') {
-        return res.status(403).send('Bad request');
+        return res.send(403, Strings.ResBadRequest);
     }
     if (code === config.testUserId) {
         userid = '';
     }
     sharingFiles.sharedFiles(userid, function (result, fileList) {
         if (!result) {
-            res.send(404, 'No files found');
+            res.send(404, Strings.ResNoFileFound);
             return;
         }
         fileList.forEach(function (file) {
@@ -136,12 +137,12 @@ app.get(config.route.download + ":hashcode", function (req, res) {
             res.attachment(fileinfo.fileName);
             sharingFiles.writeToStream(fileinfo.path, hashcode, res, function (result, blob) {
                 if (!result) {
-                    utilities.sendSafeResponse(res, 500, 'download failed');
+                    utilities.sendSafeResponse(res, 500, Strings.ResDownloadFailed);
                 }
             });
 
         } else {
-            res.send(500, "Unable to fetch the file information");
+            res.send(500, Strings.ResGetFileInfoFailed);
         }
     });
 });
