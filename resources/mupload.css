@@ -1,0 +1,46 @@
+body {
+}
+
+#uploadList {
+    width: 100%;
+    height: auto;
+    text-align: center;    
+}
+
+#footer {
+    position: fixed;
+    bottom: 0em;
+    margin: 1%;
+    width: 98%;
+    height: 3em;
+    background-color: #4cff00
+}
+
+#cell1 {
+    display: inline;
+    width: 33%;
+    float: left;
+}
+
+#cell2 {
+    display: inline;
+    width: 34%;
+    float: clear;
+}
+
+#cell3 {
+    display: inline;
+    width: 33%;
+    float: right;
+}
+
+#hiddenArea {
+    display: none;
+}
+
+.uploadItem {
+    width: 100%;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    padding: 2em 1em;
+}
