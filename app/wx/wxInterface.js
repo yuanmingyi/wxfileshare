@@ -122,7 +122,7 @@ var wxInterface = (function () {
     interface.httpPostHandler = function (req, res) {
         if (!checkSignature(req.query)) {
             logger.info('Invalid Signature. Not a weixin request');
-            res.status(403).send('Bad request');
+            res.send(403, Strings.ResBadRequest);
             return;
         }
 
@@ -135,7 +135,7 @@ var wxInterface = (function () {
             logger.trace(util.format('req url: %s', req.originalUrl));
             logger.trace(util.format('req body:\n%s', data));
             processPostData(req, data, function (result) {
-                res.status(200).send(result);
+                res.send(200, result);
             });
         });
 

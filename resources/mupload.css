@@ -2,9 +2,43 @@ body {
 }
 
 #uploadList {
+    margin-left: auto;
+    margin-right: auto;
     width: 100%;
     height: auto;
-    text-align: center;    
+    text-align: center;
+    background-color: #48e6fc;
+}
+
+p.autoselecttext {
+    
+}
+
+ul.collapseSet {
+    list-style-type: none;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0;
+    font-family: Arial;
+    font-size: 1em;
+    background-color: red;
+}
+
+li.collapseItem {
+    border-radius: 0.5em;
+    border-style: groove;
+    background-color: #eeeeee;
+    border-color: black;
+}
+
+li.collapseItem > a {
+    padding: 0.5em;
+    text-align: center;
+    color: #fff;
+    background-color: #808080;
+    display: block;
+    text-decoration: none;
 }
 
 #footer {
@@ -13,25 +47,56 @@ body {
     margin: 1%;
     width: 98%;
     height: 3em;
-    background-color: #4cff00
+    /*background-color: #4cff00*/
+}
+
+#footer > div {
+    position: absolute;
+    display: inline;
+    /*background-color: #0ff;*/
+    height: 80%;
+    margin-bottom: 20%;
 }
 
 #cell1 {
-    display: inline;
     width: 33%;
-    float: left;
+    left: 0em;
 }
 
 #cell2 {
-    display: inline;
+    left: 33%;
     width: 34%;
-    float: clear;
 }
 
 #cell3 {
-    display: inline;
+    left: 67%;
     width: 33%;
-    float: right;
+}
+
+#footer > div > .iconButton {
+    position: absolute;
+    text-align: center;
+    left: 50%;
+    margin-left: -24px;
+    width: 48px;
+    height: 48px;
+    background-repeat: no-repeat;
+}
+
+#allButton {
+    background-image: url(all48.png);
+}
+
+#addButton {
+    background-image: url(add48.png);
+}
+
+#closeButton {
+    background-image: url(close48.png);
+}
+
+.iconButton > span {
+    visibility: hidden;
 }
 
 #hiddenArea {
