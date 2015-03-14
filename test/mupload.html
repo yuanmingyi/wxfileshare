@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <link type="text/css" rel="stylesheet" href="../resources/mupload.css" />
+        <script type="text/javascript" src="../resources/mupload.js"></script>
         <title></title>
     </head>
     <body>
@@ -15,23 +16,31 @@
             </form>
         </div>
         <div id="uploadList">
-            <ul class="collapseSet">
-                <li id="upload1" class="collapseItem">
-                    <a href="">
-                        <div class="ci-icon"></div><div class="ci-titlearea"><span>title</span></div>                        
-                    </a>
-                    <div class="ci-details"><p class="autoselecttext">http://hello world</p></div>
+            <ul class="collapse-set">
+                <li id="file1" class="collapse-item-folded">
+                    <a href="javascript:onclick_fileitem('file1')" class="ci-title" filename="123"><span>title</span></a>
+                    <div class="ci-details"><p class="auto-select-text">http://hello world</p></div>
                 </li>
             </ul>
         </div>
-        <div id="popupWindow">
-            <p id="popupTest">popup text</p>
-            <span id="popupArrow">arrow</span>
+        <div id="popupWindow" class="hidden">
+            <p>popup
+                popuppopup
+                popuppopup
+                popuppopup
+                popuppopup
+                popuppopup
+                popuppopup
+                popuppopup
+                popuppopup
+                popuppopup
+                popuppopup
+            </p>
         </div>
         <div id="footer">
-            <div id="cell1"><a id="allButton" href="" class="iconButton"><span>all</span></a></div>
-            <div id="cell2"><a id="addButton" href="" class="iconButton"><span>add</span></a></div>
-            <div id="cell3"><a id="closeButton" href="" class="iconButton"><span>close</span></a></div>
+            <div id="cell1"><a id="allButton" href="javascript:onclick_all()" class="icon-button"><span>all</span></a></div>
+            <div id="cell2"><a id="addButton" href="javascript:onclick_add()" class="icon-button"><span>add</span></a></div>
+            <div id="cell3"><a id="closeButton" href="javascript:onclick_close()" class="icon-button"><span>close</span></a></div>
         </div>
     </body>
 </html>
