@@ -2,6 +2,7 @@ var express = require("express");
 var Busboy = require("busboy");
 var util = require("util");
 var fs = require("fs");
+var ejs = require('ejs');
 
 var config = require(__dirname + '/app/config').load('server');
 var log = require(__dirname + '/app/logger');
@@ -101,7 +102,10 @@ app.route(config.route.upload)
 // upload with user open id
 app.get(config.route.upload + ':userid', function (req, res) {
     var userid = wxInterface.verifyUserId(req.params.userid);
-    res.render("upload", { maxFileSize: maxFileSize, userId: userid });
+    var src = fs.readFileSync('./views/upload-mobile.ejs', 'utf8');
+    var ret = ejs.compile(src)({ maxFileSize: maxFileSize, userId: userid });
+    res.send(ret);
+    //res.render("upload", { maxFileSize: maxFileSize, userId: userid });
 });
 
 // fetch shared files

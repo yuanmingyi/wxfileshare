@@ -22,7 +22,7 @@ p.auto-select-text {
 
 ul.collapse-set {
     list-style-type: none;
-    width: 80%;
+    width: 90%;
     margin-left: auto;
     margin-right: auto;
     padding: 0;
@@ -33,6 +33,7 @@ ul.collapse-set {
 li[class^=collapse-item] {
     border-style: groove;
     border-color: black;
+    margin: 1% 0;
 }
 
 li[class^=collapse-item] > a {
@@ -40,14 +41,18 @@ li[class^=collapse-item] > a {
     display: block;
     position: relative;
     padding: 24px;
-}
-
-li.collapse-item-folded > a {
+    color: #fff;
     background-color: #808080;
 }
 
 li.collapse-item-unfolded > a {
     background-color: #000;
+}
+
+li.collapse-item-uploading > a {
+    /*opacity: 0;
+    filter: alpha(opacity=0);*/
+    color: #000;
 }
 
 li[class^=collapse-item] > a > span {
@@ -60,7 +65,6 @@ li[class^=collapse-item] > a > span {
     line-height: 32px;
     padding-left: 40px;
     text-align: center;
-    color: #fff;
 }
 
 li.collapse-item-folded > a > span {
@@ -76,10 +80,11 @@ li[class^=collapse-item] > .ci-details {
     padding: 1em;
     text-align: center;
     background-color: #eeeeee;
+    display: none;
 }
 
-li.collapse-item-folded > .ci-details {
-    display: none;
+li.collapse-item-unfolded > .ci-details {
+    display: block;
 }
 
 #popupWindow {
@@ -96,10 +101,9 @@ li.collapse-item-folded > .ci-details {
 }
 
 #popupWindow.auto-size {
-    margin-left: auto;
-    margin-right: auto;
     top: 10%;
-    width: 50%;
+    left: 10%;
+    right: 10%;
 }
 
 #popupWindow.fixed-size {

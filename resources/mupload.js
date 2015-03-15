@@ -62,6 +62,31 @@
         return this;
     }
 
+    /*
+    * select all the text within the given node
+    */
+    var selectText = function (p) {
+        if (window.getSelection) {
+            var selection = window.getSelection();
+            selection.selectAllChildren(p);
+        } else {
+            var range = document.body.createTextRange();
+            range.moveToElementText(p);
+            range.select();
+        }
+    };
+
+    /*
+    * modify the shown file name to limit the characters within 15 (use ... to replace the middle part of the filename)
+    */
+    var limitName = function (filename) {
+        var maxFilenameLength = 20;
+        if (filename.length > maxFilenameLength) {
+            filename = filename.slice(0, 8) + '....' + filename.slice(-8);
+        }
+        return filename;
+    };
+
     var popupWindow = (function () {
         var element = null;
         var p = null;
@@ -86,7 +111,7 @@
         obj.initialize = function (id) {
             element = document.getElementById(id);
             p = element.getElementsByTagName('p')[0];
-            p.onblur = element.onclick = function () {
+            element.parentNode.onclick = element.onclick = function () {
                 element.class('hidden');
             };
         }
@@ -98,6 +123,8 @@
         var containerDiv = null;
         var list = null;
         var itemCount = 0;
+        var items = {};
+
         var obj = {};
 
         obj.initialize = function (id) {
@@ -115,31 +142,46 @@
             var id = 'file' + itemCount;
             itemCount++;
             var p = document.createElement('p').class('auto-select-text');
-            var ci_title = document.createElement('a')
-            .class('ci-title')
-            .attr('filename', filename)
-            .inner('<span>' + limitName(filename) + '</span>');
-            var ci_details = document.createElement('div')
-            .class('ci-details')
-            .append(p);
-            var li = document.createElement('li')
-            .attr('id', id)
-            .class('collapse-item-folded')
-            .append(ci_title)
-            .append(ci_details);
+            var title = document.createTextNode(limitName(filename));
+            var ci_title = document.createElement('a').class('ci-title').attr('filename', filename);
+            ci_title.appendChild(document.createElement('span')).appendChild(title);
+
+            var ci_details = document.createElement('div').class('ci-details').append(p);
+            var li = document.createElement('li').attr('id', id).class('collapse-item-folded').append(ci_title).append(ci_details);
 
             listItem.id = id;
+
+            listItem.node = li;
+
             listItem.uploading = function () {
+                li.class('collapse-item-uploading');
                 list.insert(li);
             };
 
             listItem.uploaded = function (obj) {
+                li.class('collapse-item-folded');
                 ci_title.attr('href', 'javascript:onclick_fileitem("' + this.id + '")');
+                title.nodeValue = limitName(filename);
                 p.innerText = obj.url;
+                onclick_fileitem(this.id);
+            };
+
+            listItem.updateProgress = function (event) {
+                if (event.lengthComputable) {
+                    var percentComplete = Math.round(event.loaded * 100 / event.total);
+                    title.nodeValue = '正在上传...: ' + limitName(filename) + ' ' + percentComplete.toString() + '%';
+                    ci_title.style.opacity = percentComplete / 100;
+                    // for ie
+                    ci_title.style.filter = 'alpha(opacity=' + percentComplete + ')';
+                }
+                else {
+                    title.nodeValue = limitName(filename) + ' ??%';
+                }
             };
 
             listItem.remove = function () {
-                list.rm(li);
+                delete items[this.id];
+                this.node.remove();
             };
 
             listItem.filename = function () {
@@ -150,7 +192,33 @@
                 return p.innerText;
             };
 
+            listItem.isFolded = function () {
+                return li.class() === 'collapse-item-folded';
+            }
+
+            listItem.fold = function () {
+                li.class('collapse-item-folded');
+            }
+
+            listItem.unfold = function () {
+                li.class('collapse-item-unfolded');
+            }
+
+            listItem.selectText = function () {
+                selectText(p);
+            };
+
+            items[id] = listItem;
+
             return listItem;
+        };
+
+        obj.getListItemObj = function (id) {
+            if (typeof items[id] === 'undefined') {
+                return null;
+            }
+
+            return items[id];
         };
 
         obj.getAllLinks = function () {
@@ -158,13 +226,19 @@
             var links = [];
 
             for (var i = 0; i < fileItems.length; i++) {
-                var fileItem = fileItems[i];
-                var filename = fileItem.getElementsByClassName('ci-title')[0].attr('filename');
-                var link = fileItem.getElementsByClassName('auto-select-text')[0].innerText;
+                var item = items[fileItems[i].id];
+                var filename = item.filename();
+                var link = item.link();
                 links.push({ name: filename, link: link });
             }
 
             return links;
+        };
+
+        obj.foldAll = function () {
+            Array.prototype.forEach.apply(list.getElementsByClassName('collapse-item-unfolded'), [function (e) {
+                e.class('collapse-item-folded');
+            } ]);
         };
 
         return obj;
@@ -190,23 +264,30 @@
                 }
 
                 var uid = document.getElementById("uid");
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/upload", true);
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState == 4) {
-                        if (xhr.status == 200) {
-                            var obj = JSON.parse(xhr.responseText);
-                            newFile.uploaded(obj);
-                        } else {
-                            alertBox("文件上传失败，请重试");
-                            newFile.remove();
-                        }
-                    }
-                };
-
                 form['uid'].value = uid.textContent;
-                xhr.send(new FormData(form));
                 var newFile = uploadList.addListItem(uploader.files[0].name);
+
+                var xhr = new XMLHttpRequest();
+                if (xhr.upload) {
+                    xhr.upload.addEventListener('progress', function (e) {
+                        newFile.updateProgress(e);
+                    }, false);
+                }
+                xhr.addEventListener('load', function (e) {
+                    var obj = JSON.parse(e.target.responseText);
+                    newFile.uploaded(obj);
+                }, false);
+                xhr.addEventListener('error', function (e) {
+                    alertBox("文件上传失败，请重试");
+                    newFile.remove();
+                }, false);
+                xhr.addEventListener('abort', function (e) {
+                    newFile.remove();
+                }, false);
+
+                xhr.open("POST", "/upload", true);
+
+                xhr.send(new FormData(form));
                 newFile.uploading();
                 form.reset();
             }
@@ -227,7 +308,11 @@
         for (var i = 0; i < allLinks.length; i++) {
             text.push(allLinks[i].name + ':\n' + allLinks[i].link);
         }
-        popupWindow.showSelected(text.join('\n\n'), true);
+        if (text.length > 0) {
+            popupWindow.showSelected(text.join('\n\n'), true);
+        } else {
+            alertBox('请先上传文件');
+        }
     };
 
     window.onclick_close = function () {
@@ -239,35 +324,14 @@
     };
 
     window.onclick_fileitem = function (id) {
-        var li = document.getElementById(id);
-        if (li.class() === 'collapse-item-folded') {
-            li.class('collapse-item-unfolded');
-            selectText(li.getElementsByTagName('p')[0]);
+        var item = uploadList.getListItemObj(id);
+        if (item.isFolded()) {
+            uploadList.foldAll();
+            item.unfold();
+            item.selectText();
         } else {
-            li.class('collapse-item-folded');
+            item.fold();
         }
-    };
-
-    var selectText = function (p) {
-        if (window.getSelection) {
-            var selection = window.getSelection();
-            selection.selectAllChildren(p);
-        } else {
-            var range = document.body.createTextRange();
-            range.moveToElementText(p);
-            range.select();
-        }
-    };
-
-    /*
-    * modify the shown file name to limit the characters within 15 (use ... to replace the middle part of the filename)
-    */
-    var limitName = function (filename) {
-        var maxFilenameLength = 20;
-        if (filename.length > maxFilenameLength) {
-            filename = filename.slice(0, 8) + '....' + filename.slice(-8);
-        }
-        return filename;
     };
 
 })(window);
