@@ -117,8 +117,9 @@ compileStrings(strings);
 strings.compileStrings = compileStrings;
 
 strings.getString = function (id) {
-    Array.prototype.unshift.apply(Array.prototype.slice.apply(arguments, 1), strings[id]);
-    return util.format.apply(null, arguments);
+    var args = Array.prototype.slice.apply(arguments, [1]);
+    Array.prototype.unshift.apply(args, [this[id]]);
+    return util.format.apply(null, args);
 };
 
 module.exports = strings;

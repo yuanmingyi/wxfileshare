@@ -14,7 +14,8 @@ var strres = {
     "7": "$(8)",
     "8": "2",
     "9": "$(6) is too long, I like$(5)which is shorter, but $(3) is even shorter. Maybe, $(4) is shortest, but $(5) is best",
-    "0": "$(1) $(4) $(3) $(1):$(4):$(3):$(1)_$(4)_$(3)"
+    "0": "$(1) $(4) $(3) $(1):$(4):$(3):$(1)_$(4)_$(3)",
+    "a": "hello %s world: %d"
 };
 
 var errormsg = function (key) {
@@ -37,4 +38,7 @@ assert.equal(strres['9'],
     + '$(1) is not hello world, $(hello world) is hello world, $(1) is abcdefg is best',
     errormsg('9'));
 assert.equal(strres['0'], 'abcdefg $(1) $(hello world) abcdefg:$(1):$(hello world):abcdefg_$(1)_$(hello world)', errormsg('0'));
+
+var a = strings.getString.apply(strres, ['a', 'HELLO', 1]);
+assert.equal(a, 'hello HELLO world: 1', a);
 logger.info('Strings Test Pass!');
