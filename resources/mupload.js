@@ -2,6 +2,7 @@
 
 (function (window) {
     var document = window.document;
+    var maxFilenameLength = 20;
 
     Element.prototype.attr = function (name, value) {
         var attr = {};
@@ -80,7 +81,6 @@
     * modify the shown file name to limit the characters within 15 (use ... to replace the middle part of the filename)
     */
     var limitName = function (filename) {
-        var maxFilenameLength = 20;
         if (filename.length > maxFilenameLength) {
             filename = filename.slice(0, 8) + '....' + filename.slice(-8);
         }
@@ -287,11 +287,11 @@
 
                 xhr.open("POST", "/upload", true);
 
-                xhr.send(new FormData(form));
+                console.log(xhr.send(new FormData(form)));
                 newFile.uploading();
                 form.reset();
             }
-        };
+        }; 
     };
 
     /*
