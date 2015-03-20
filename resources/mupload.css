@@ -32,6 +32,7 @@ li[class^=collapse-item] > a {
     position: relative;
     color: #fff;
     background-color: #808080;
+    overflow: hidden;
 }
 
 li.collapse-item-unfolded > a {

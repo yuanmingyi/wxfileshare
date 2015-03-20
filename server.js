@@ -46,7 +46,6 @@ app.get(config.route.resources + ":name", utilities.getResources(''));
 app.route(config.route.upload)
 .get(function (req, res) {
     res.render("upload", { maxFileSize: maxFileSize, userId: '' });
-    //renderUploadEjs(res, '');
 })
 .post(function (req, res) {
     var busboy = new Busboy({ headers: req.headers, limits: { fileSize: maxFileSize, files: 1} });
@@ -103,7 +102,6 @@ app.route(config.route.upload)
 // upload with user open id
 app.get(config.route.upload + ':userid', function (req, res) {
     renderUploadEjs(res, req.params.userid);
-    //res.render("upload", { maxFileSize: maxFileSize, userId: userid });
 });
 
 // fetch shared files
