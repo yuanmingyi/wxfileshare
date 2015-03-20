@@ -268,23 +268,32 @@
                 var newFile = uploadList.addListItem(uploader.files[0].name);
 
                 var xhr = new XMLHttpRequest();
+
+                var eventHandler = 'attachEvent';
+                var eventPrefix = 'on';
+                if (xhr.addEventListener) {
+                    eventHandler = 'addEventListener';
+                    eventPrefix = '';
+                }
+                
                 if (xhr.upload) {
-                    xhr.upload.addEventListener('progress', function (e) {
+                    xhr.upload[eventHandler](eventPrefix + 'progress', function (e) {
                         newFile.updateProgress(e);
                     }, false);
                 }
-                xhr.addEventListener('load', function (e) {
+
+                xhr[eventHandler](eventPrefix + 'load', function (e) {
                     var obj = JSON.parse(e.target.responseText);
                     newFile.uploaded(obj);
                 }, false);
-                xhr.addEventListener('error', function (e) {
+                xhr[eventHandler](eventPrefix + 'error', function (e) {
                     alertBox("文件上传失败，请重试");
                     newFile.remove();
                 }, false);
-                xhr.addEventListener('abort', function (e) {
+                xhr[eventHandler](eventPrefix + 'abort', function (e) {
                     newFile.remove();
                 }, false);
-
+                                
                 xhr.open("POST", "/upload", true);
 
                 console.log(xhr.send(new FormData(form)));
@@ -309,7 +318,7 @@
             text.push(allLinks[i].name + ':\n' + allLinks[i].link);
         }
         if (text.length > 0) {
-            popupWindow.showSelected(text.join('\n\n'), true);
+            popupWindow.showSelected(text.join('\n\n'), false);
         } else {
             alertBox('请先上传文件');
         }
@@ -320,7 +329,7 @@
     };
 
     window.alertBox = function (text) {
-        popupWindow.showMessage(text, false);
+        popupWindow.showMessage(text, true);
     };
 
     window.onclick_fileitem = function (id) {

@@ -64,7 +64,7 @@ li.collapse-item-folded > a > span {
 li.collapse-item-unfolded > a > span {
     background-image: url(minus256.png);
     background-size: 48px 16px;
-    margin-top: -8px;
+    background-position-y: 16px;
 }
 
 li[class^=collapse-item] > .ci-details {
@@ -86,6 +86,8 @@ li.collapse-item-unfolded > .ci-details {
     text-align: center;
     left: 18%;
     width: 64%;
+    bottom: 40px;
+    top: 40px;
     padding: 2%;
     background-color: rgba(225, 225, 225, 0.5);
     z-index: 2;
@@ -95,7 +97,7 @@ li.collapse-item-unfolded > .ci-details {
     display: none;
 }
 
-#popupWindow.fixed-size {
+#popupWindow.auto-size {
     overflow: auto;
 }
 
@@ -215,27 +217,19 @@ li.collapse-item-unfolded > .ci-details {
     }
 
     li.collapse-item-unfolded > a > span {
-        background-image: url(minus256.png);
-        background-size: 48px 16px;
-        margin-top: -8px;
-    }
-}
-
-@media (min-height:240px) {
-    #popupWindow {
-        height: 160px;
-        top: 40px;
+        background-size: 64px 21px;
+        background-position-y: 22px;
     }
 }
 
 @media (min-height:320px) {
     #popupWindow.auto-size {
-        height: 80%;
         top: 10%;
+        bottom: 15%;
     }
 
     #popupWindow.fixed-size {
-        height: 30%;
         top: 35%;
+        bottom: 35%;
     }
 }
