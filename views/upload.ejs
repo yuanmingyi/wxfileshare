@@ -2,19 +2,12 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link type="text/css" rel="stylesheet" href="../resources/mupload.css" />
         <script type="text/javascript" src="../resources/mupload.js"></script>
         <title></title>
     </head>
     <body>
-        <div id="hiddenArea">
-            <span id="maxFileSize"><%= maxFileSize %></span>
-            <span id="uid"><%= userId %></span>
-            <form id="form0" enctype="multipart/form-data" method="post">
-                <input name="uid" type="hidden" />
-                <input name="file" id="uploader" type="file" />
-            </form>
-        </div>
         <div id="uploadList">
             <ul class="collapse-set">
                 <!--<li id="file1" class="collapse-item-folded">
@@ -30,6 +23,14 @@
             <div id="cell1"><a id="allButton" href="javascript:onclick_all()" class="icon-button"><span>all</span></a></div>
             <div id="cell2"><a id="addButton" href="javascript:onclick_add()" class="icon-button"><span>add</span></a></div>
             <div id="cell3"><a id="closeButton" href="javascript:onclick_close()" class="icon-button"><span>close</span></a></div>
+        </div>
+        <div id="hiddenArea">
+            <span id="maxFileSize"><%= maxFileSize %></span>
+            <span id="uid"><%= userId %></span>
+            <form id="form0" enctype="multipart/form-data" method="post">
+                <input name="uid" type="hidden" />
+                <input name="file" id="uploader" type="file" />
+            </form>
         </div>
     </body>
 </html>

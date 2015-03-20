@@ -46,6 +46,7 @@ app.get(config.route.resources + ":name", utilities.getResources(''));
 app.route(config.route.upload)
 .get(function (req, res) {
     res.render("upload", { maxFileSize: maxFileSize, userId: '' });
+    //renderUploadEjs(res, '');
 })
 .post(function (req, res) {
     var busboy = new Busboy({ headers: req.headers, limits: { fileSize: maxFileSize, files: 1} });
@@ -101,10 +102,7 @@ app.route(config.route.upload)
 
 // upload with user open id
 app.get(config.route.upload + ':userid', function (req, res) {
-    var userid = wxInterface.verifyUserId(req.params.userid);
-    var src = fs.readFileSync('./views/upload-mobile.ejs', 'utf8');
-    var ret = ejs.compile(src)({ maxFileSize: maxFileSize, userId: userid });
-    res.send(ret);
+    renderUploadEjs(res, req.params.userid);
     //res.render("upload", { maxFileSize: maxFileSize, userId: userid });
 });
 
@@ -151,5 +149,12 @@ app.get(config.route.download + ":hashcode", function (req, res) {
     });
 });
 
-app.listen(port);
+var renderUploadEjs = function (res, userid) {
+    userid = wxInterface.verifyUserId(userid);
+    var src = fs.readFileSync('./views/upload.ejs', 'utf8');
+    var ret = ejs.compile(src)({ maxFileSize: maxFileSize, userId: userid });
+    res.send(ret);
+ }
+ 
+ app.listen(port);
 logger.info('Express started on port ' + port);

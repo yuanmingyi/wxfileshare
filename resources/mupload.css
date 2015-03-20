@@ -1,9 +1,5 @@
 body {
-}
-
-.empty {
-    margin: 0;
-    display: inline;
+    font-size: large;
 }
 
 .clear {
@@ -11,36 +7,29 @@ body {
 }
 
 #uploadList {
+    width: 92%;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
-    height: auto;
-}
-
-p.auto-select-text {
 }
 
 ul.collapse-set {
     list-style-type: none;
-    width: 90%;
-    margin-left: auto;
-    margin-right: auto;
     padding: 0;
+    margin: 0;
     font-family: Arial;
-    font-size: 1em;
 }
 
 li[class^=collapse-item] {
     border-style: groove;
     border-color: black;
-    margin: 1% 0;
+    margin-top: 8px;
 }
 
 li[class^=collapse-item] > a {
+    height: 80px;
     text-decoration: none;
     display: block;
     position: relative;
-    padding: 24px;
     color: #fff;
     background-color: #808080;
 }
@@ -50,36 +39,38 @@ li.collapse-item-unfolded > a {
 }
 
 li.collapse-item-uploading > a {
-    /*opacity: 0;
-    filter: alpha(opacity=0);*/
     color: #000;
 }
 
 li[class^=collapse-item] > a > span {
     position: absolute;
     top: 50%;
-    margin-top: -16px;
-    left: 8px;
-    right: 8px;
-    height: 32px;
-    line-height: 32px;
-    padding-left: 40px;
     text-align: center;
+    left: 8px;
+    right: 56px;
+    height: 48px;
+    line-height: 48px;
+    padding-left: 56px;
+    margin-top: -24px;
+    background-size: 48px 48px;
+    background-repeat: no-repeat;
 }
 
 li.collapse-item-folded > a > span {
-    background: url(add32.png) no-repeat;
+    background-image: url(add256.png);
 }
 
 li.collapse-item-unfolded > a > span {
-    background: url(minus32.png) no-repeat;
+    background-image: url(minus256.png);
+    background-size: 48px 16px;
+    margin-top: -8px;
 }
 
 li[class^=collapse-item] > .ci-details {
     margin: 0;
-    padding: 1em;
-    text-align: center;
+    padding: 2%;
     word-wrap: break-word;
+    text-align: center;
     background-color: #eeeeee;
     display: none;
 }
@@ -90,9 +81,11 @@ li.collapse-item-unfolded > .ci-details {
 
 #popupWindow {
     position: fixed;
-    padding: 10%;
     word-wrap: break-word;
     text-align: center;
+    left: 18%;
+    width: 64%;
+    padding: 2%;
     background-color: rgba(225, 225, 225, 0.5);
     z-index: 2;
 }
@@ -101,17 +94,7 @@ li.collapse-item-unfolded > .ci-details {
     display: none;
 }
 
-#popupWindow.auto-size {
-    top: 10%;
-    left: 10%;
-    right: 10%;
-}
-
 #popupWindow.fixed-size {
-    left: 10%;
-    right: 10%;
-    top: 10%;
-    bottom: 10%;
     overflow: auto;
 }
 
@@ -122,24 +105,22 @@ li.collapse-item-unfolded > .ci-details {
 
 #footer {
     position: fixed;
+    left: 0;
     bottom: 0;
-    margin: 1%;
-    width: 98%;
-    height: 3em;
-    /*background-color: #4cff00*/
+    width: 100%;
+    height: 80px;
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 #footer > div {
     position: absolute;
     display: inline;
-    /*background-color: #0ff;*/
-    height: 80%;
-    margin-bottom: 20%;
+    height: 100%;
 }
 
 #cell1 {
     width: 33%;
-    left: 0em;
+    left: 0;
 }
 
 #cell2 {
@@ -156,22 +137,25 @@ li.collapse-item-unfolded > .ci-details {
     position: absolute;
     text-align: center;
     left: 50%;
-    margin-left: -24px;
-    width: 48px;
-    height: 48px;
+    top: 50%;
+    margin-left: -32px;
+    margin-top: -32px;
+    width: 64px;
+    height: 64px;
+    background-size: 64px 64px;
     background-repeat: no-repeat;
 }
 
 #allButton {
-    background-image: url(all48.png);
+    background-image: url(all256.png);
 }
 
 #addButton {
-    background-image: url(add48.png);
+    background-image: url(add256.png);
 }
 
 #closeButton {
-    background-image: url(close48.png);
+    background-image: url(close256.png);
 }
 
 .icon-button > span {
@@ -180,4 +164,77 @@ li.collapse-item-unfolded > .ci-details {
 
 #hiddenArea {
     display: none;
+}
+
+@media (min-width:360px) {
+    #popupWindow.fixed-size {
+        left: 20%;
+        width: 60%;
+    }
+}
+
+@media (min-width:480px) {
+    #footer {
+        height: 120px;
+    }
+
+    #footer > div > .icon-button {
+        background-size: 96px 96px;
+        margin-left: -48px;
+        margin-top: -48px;
+        width: 96px;
+        height: 96px;
+    }
+
+    #popupWindow.fixed-size {
+        left: 25%;
+        width: 50%;
+    }
+
+    #uploadList {
+        width: 80%;
+    }
+
+    li[class^=collapse-item] {
+        margin-top: 12px;
+    }
+
+    li[class^=collapse-item] > a {
+        height: 120px;
+    }
+
+    li[class^=collapse-item] > a > span {
+        margin-top: -32px;
+        left: 16px;
+        right: 80px;
+        height: 64px;
+        line-height: 64px;
+        padding-left: 80px;
+        background-size: 64px 64px;
+    }
+
+    li.collapse-item-unfolded > a > span {
+        background-image: url(minus256.png);
+        background-size: 48px 16px;
+        margin-top: -8px;
+    }
+}
+
+@media (min-height:240px) {
+    #popupWindow {
+        height: 160px;
+        top: 40px;
+    }
+}
+
+@media (min-height:320px) {
+    #popupWindow.auto-size {
+        height: 80%;
+        top: 10%;
+    }
+
+    #popupWindow.fixed-size {
+        height: 30%;
+        top: 35%;
+    }
 }
