@@ -79,6 +79,7 @@ li[class^=collapse-item] > .ci-details {
     margin: 0;
     padding: 1em;
     text-align: center;
+    word-wrap: break-word;
     background-color: #eeeeee;
     display: none;
 }
