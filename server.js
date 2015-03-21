@@ -101,7 +101,7 @@ app.route(config.route.upload)
 
 // upload with user open id
 app.get(config.route.upload + ':userid', function (req, res) {
-    renderUploadEjs(res, req.params.userid, {});
+    renderUploadEjs(res, req.params.userid, []);
 });
 
 // fetch shared files
@@ -123,6 +123,7 @@ app.get(config.route.show + ':code', function (req, res) {
             file.url = utilities.makeDownloadUrl(req, file.hashCode);
             logger.trace('file info:\n%s', util.inspect(file));
         });
+
         renderUploadEjs(res, userid, fileList);
         //res.render("showupload", { fileList: fileList });
     });

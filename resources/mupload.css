@@ -7,9 +7,12 @@ body {
 }
 
 #uploadList {
-    width: 92%;
-    margin-left: auto;
-    margin-right: auto;
+    position: fixed;
+    left: 4%;
+    right: 4%;
+    top: 0px;
+    bottom: 80px;
+    overflow: auto;
 }
 
 ul.collapse-set {
@@ -85,10 +88,11 @@ li.collapse-item-unfolded > .ci-details {
     word-wrap: break-word;
     text-align: center;
     left: 18%;
-    width: 64%;
+    right: 18%;
     bottom: 40px;
     top: 40px;
-    padding: 2%;
+    padding: 1%;
+    border: 5px dashed rgba(255, 255, 255, 0.5);
     background-color: rgba(225, 225, 225, 0.5);
     z-index: 2;
 }
@@ -99,6 +103,10 @@ li.collapse-item-unfolded > .ci-details {
 
 #popupWindow.auto-size {
     overflow: auto;
+}
+
+#popupWindow.fixed-size {
+    border-style: solid;
 }
 
 #popupWindow > p {
@@ -172,7 +180,7 @@ li.collapse-item-unfolded > .ci-details {
 @media (min-width:360px) {
     #popupWindow.fixed-size {
         left: 20%;
-        width: 60%;
+        right: 20%;
     }
 }
 
@@ -191,11 +199,14 @@ li.collapse-item-unfolded > .ci-details {
 
     #popupWindow.fixed-size {
         left: 25%;
-        width: 50%;
+        right: 25%;
     }
 
     #uploadList {
-        width: 80%;
+        left: 10%;
+        right: 10%;
+        top: 0px;
+        bottom: 120px;
     }
 
     li[class^=collapse-item] {

@@ -129,7 +129,10 @@ var sharingFiles = (function () {
                 callback(false, []);
             } else {
                 logger.trace(util.format('file info for userid %s are queried', userid));
-                callback(true, tableInfo.entities2filesInfo(result.entries));
+                var filesInfo = tableInfo.entities2filesInfo(result.entries).sort(function (file1, file2) {
+                    return file2.createDate - file1.createDate;
+                });
+                callback(true, filesInfo);
             }
         });
     };

@@ -128,84 +128,95 @@
         var obj = {};
 
         function ListItem(li) {
-            var id = li.attr('id');
-            var ci_title = li.getElementsByClassName('ci_title')[0];
-            var title = ci_title.getElementsByTagName('span')[0].childNodes[0];
-            var p = li.getElementsByClassName('auto-select-text')[0];
-
-            this.node = li;
+            var id = currentId();
+            this.li = li;
             this.id = id;
+            this.ci_title = li.getElementsByClassName('ci-title')[0];
+            this.title = document.createTextNode(limitName(this.filename()));
+            this.ci_title.getElementsByTagName('span')[0].appendChild(this.title);
+            this.ci_title.attr('href', 'javascript:onclick_fileitem("' + this.id + '")');
+            this.p = li.getElementsByClassName('auto-select-text')[0];
 
-            this.prototype.uploading = function () {
-                li.class('collapse-item-uploading');
-                list.insert(li);
-            };
-
-            this.prototype.uploaded = function (obj) {
-                li.class('collapse-item-folded');
-                ci_title.attr('href', 'javascript:onclick_fileitem("' + this.id + '")');
-                title.nodeValue = limitName(this.filename());
-                p.textContent = obj.url;
-                onclick_fileitem(this.id);
-            };
-
-            this.prototype.updateProgress = function (event) {
-                var filename = this.filename();
-                if (event.lengthComputable) {
-                    var percentComplete = Math.round(event.loaded * 100 / event.total);
-                    title.nodeValue = '正在上传...: ' + limitName(filename) + ' ' + percentComplete.toString() + '%';
-                    ci_title.style.opacity = percentComplete / 100;
-                    // for ie
-                    ci_title.style.filter = 'alpha(opacity=' + percentComplete + ')';
-                }
-                else {
-                    title.nodeValue = limitName(filename) + ' ??%';
-                }
-            };
-
-            this.prototype.remove = function () {
-                delete items[this.id];
-                this.node.remove();
-            };
-
-            this.prototype.filename = function () {
-                return ci_title.attr('filename');
-            };
-
-            this.prototype.link = function () {
-                return p.textContent;
-            };
-
-            this.prototype.isFolded = function () {
-                return li.class() === 'collapse-item-folded';
-            }
-
-            this.prototype.fold = function () {
-                li.class('collapse-item-folded');
-            }
-
-            this.prototype.unfold = function () {
-                li.class('collapse-item-unfolded');
-            }
-
-            this.prototype.selectText = function () {
-                selectText(p);
-            };
-
+            li.attr('id', id);
             items[id] = this;
+            itemCount++;
         }
 
-        var newId = function () {
-            return 'file' + itemCount++;
+        ListItem.prototype.uploading = function () {
+            this.li.class('collapse-item-uploading');
+            list.insert(this.li);
+        };
+
+        ListItem.prototype.uploaded = function (obj) {
+            this.li.class('collapse-item-folded');
+            this.title.nodeValue = limitName(this.filename());
+            this.p.textContent = obj.url;
+            onclick_fileitem(this.id);
+        };
+
+        ListItem.prototype.updateProgress = function (event) {
+            var filename = this.filename();
+            if (event.lengthComputable) {
+                var percentComplete = Math.round(event.loaded * 100 / event.total);
+                this.title.nodeValue = '正在上传...: ' + limitName(filename) + ' ' + percentComplete.toString() + '%';
+                this.ci_title.style.opacity = percentComplete / 100;
+                // for ie
+                this.ci_title.style.filter = 'alpha(opacity=' + percentComplete + ')';
+            }
+            else {
+                this.title.nodeValue = limitName(filename) + ' ??%';
+            }
+        };
+
+        ListItem.prototype.remove = function () {
+            delete items[this.id];
+            this.li.remove();
+        };
+
+        ListItem.prototype.filename = function () {
+            return this.ci_title.attr('filename');
+        };
+
+        ListItem.prototype.link = function () {
+            return this.p.textContent;
+        };
+
+        ListItem.prototype.isFolded = function () {
+            return this.li.class() === 'collapse-item-folded';
+        };
+
+        ListItem.prototype.isUploading = function () {
+            return this.li.class() === 'collapse-item-uploading';
+        };
+
+        ListItem.prototype.isUploaded = function () {
+            return this.li.class() === 'collapse-item-folded'
+                || this.li.class() === 'collapse-item-unfolded';
+        };
+
+        ListItem.prototype.fold = function () {
+            this.li.class('collapse-item-folded');
+        };
+
+        ListItem.prototype.unfold = function () {
+            this.li.class('collapse-item-unfolded');
+        };
+
+        ListItem.prototype.selectText = function () {
+            selectText(this.p);
+        };
+
+        var currentId = function () {
+            return 'file' + itemCount;
         };
 
         obj.initialize = function (id) {
             containerDiv = document.getElementById(id);
             list = containerDiv.getElementsByClassName('collapse-set')[0];
-            list.children().forEach(function (li) {
+            for (var i = list.children.length - 1; i >= 0; i--) {
+                var li = list.children[i];
                 new ListItem(li);
-                itemCount++;
-            });
+            }
         };
 
         /*
@@ -213,14 +224,11 @@
         */
         obj.addListItem = function (filename) {
             // create HTML element
-            var id = newId();
             var p = document.createElement('p').class('auto-select-text');
-            var title = document.createTextNode(limitName(filename));
             var ci_title = document.createElement('a').class('ci-title').attr('filename', filename);
-            ci_title.appendChild(document.createElement('span')).appendChild(title);
-
+            ci_title.appendChild(document.createElement('span'));
             var ci_details = document.createElement('div').class('ci-details').append(p);
-            var li = document.createElement('li').attr('id', id).class('collapse-item-folded').append(ci_title).append(ci_details);
+            var li = document.createElement('li').class('collapse-item-folded').append(ci_title).append(ci_details);
 
             return new ListItem(li);
         };
@@ -234,14 +242,15 @@
         };
 
         obj.getAllLinks = function () {
-            var fileItems = list.children;
             var links = [];
-
-            for (var i = 0; i < fileItems.length; i++) {
-                var item = items[fileItems[i].id];
-                var filename = item.filename();
-                var link = item.link();
-                links.push({ name: filename, link: link });
+            var listItems = list.children;
+            for (var i = 0; i < listItems.length; i++) {
+                var item = items[listItems[i].id];
+                if (item.isUploaded()) {
+                    var filename = item.filename();
+                    var link = item.link();
+                    links.push({ name: filename, link: link });
+                }
             }
 
             return links;
@@ -311,7 +320,11 @@
     */
     window.onclick_add = function () {
         var uploader = document.getElementById("uploader");
-        uploader.click();
+        if (uploader.disabled) {
+            alertBox('您的微信版本不支持上传文件，请点击菜单选择“在IE中打开”来进行操作');
+        } else {
+            uploader.click();
+        }
     };
 
     window.onclick_all = function () {
@@ -321,7 +334,7 @@
             text.push(allLinks[i].name + ':\n' + allLinks[i].link);
         }
         if (text.length > 0) {
-            popupWindow.showSelected(text.join('\n\n'), true);
+            popupWindow.showSelected(text.join('\n\n'), false);
         } else {
             alertBox('请先上传文件');
         }
@@ -332,11 +345,14 @@
     };
 
     window.alertBox = function (text) {
-        popupWindow.showMessage(text, false);
+        popupWindow.showMessage(text, true);
     };
 
     window.onclick_fileitem = function (id) {
         var item = uploadList.getListItemObj(id);
+        if (!item.isUploaded()) {
+            return;
+        }
         if (item.isFolded()) {
             uploadList.foldAll();
             item.unfold();
@@ -345,6 +361,4 @@
             item.fold();
         }
     };
-
-    window.limitName = limitName;
 })(window);

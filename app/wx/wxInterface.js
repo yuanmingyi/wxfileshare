@@ -53,9 +53,6 @@ var wxInterface = (function () {
                             // request for showing files that already uploaded, return all the urls of the uploaded files
                             sharingFiles.sharedFiles(userid, function (files) {
                                 message = Strings.WxUploadedLinks;
-                                files.sort(function (f1, f2) {
-                                    return f2.createDate - f1.createDate;
-                                });
                                 var length = files.length < config.showFileCount ? files.length : config.showFileCount;
                                 for (var i = 0; i < length; i++) {
                                     message += '\n' + files[i].fileName + ' ' + utilities.makeDownloadUrl(req, files[i].hashCode);
