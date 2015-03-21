@@ -101,7 +101,7 @@ app.route(config.route.upload)
 
 // upload with user open id
 app.get(config.route.upload + ':userid', function (req, res) {
-    renderUploadEjs(res, req.params.userid);
+    renderUploadEjs(res, req.params.userid, {});
 });
 
 // fetch shared files
@@ -123,7 +123,8 @@ app.get(config.route.show + ':code', function (req, res) {
             file.url = utilities.makeDownloadUrl(req, file.hashCode);
             logger.trace('file info:\n%s', util.inspect(file));
         });
-        res.render("showupload", { fileList: fileList });
+        renderUploadEjs(res, userid, fileList);
+        //res.render("showupload", { fileList: fileList });
     });
 });
 
@@ -147,10 +148,10 @@ app.get(config.route.download + ":hashcode", function (req, res) {
     });
 });
 
-var renderUploadEjs = function (res, userid) {
+var renderUploadEjs = function (res, userid, fileList) {
     userid = wxInterface.verifyUserId(userid);
     var src = fs.readFileSync('./views/upload.ejs', 'utf8');
-    var ret = ejs.compile(src)({ maxFileSize: maxFileSize, userId: userid });
+    var ret = ejs.compile(src)({ maxFileSize: maxFileSize, userId: userid, fileList: fileList });
     res.send(ret);
  }
  

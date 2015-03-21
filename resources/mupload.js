@@ -100,7 +100,7 @@
 
         obj.showMessage = function (text, fixedSize) {
             element.class('hidden');
-            p.innerText = text;
+            p.textContent = text;
             if (fixedSize) {
                 element.class('fixed-size');
             } else {
@@ -127,46 +127,30 @@
 
         var obj = {};
 
-        obj.initialize = function (id) {
-            containerDiv = document.getElementById(id);
-            list = containerDiv.getElementsByClassName('collapse-set')[0];
-        };
+        function ListItem(li) {
+            var id = li.attr('id');
+            var ci_title = li.getElementsByClassName('ci_title')[0];
+            var title = ci_title.getElementsByTagName('span')[0].childNodes[0];
+            var p = li.getElementsByClassName('auto-select-text')[0];
 
-        /*
-        * add an uploaded item to the item list
-        */
-        obj.addListItem = function (filename) {
-            var listItem = {};
+            this.node = li;
+            this.id = id;
 
-            // create HTML element
-            var id = 'file' + itemCount;
-            itemCount++;
-            var p = document.createElement('p').class('auto-select-text');
-            var title = document.createTextNode(limitName(filename));
-            var ci_title = document.createElement('a').class('ci-title').attr('filename', filename);
-            ci_title.appendChild(document.createElement('span')).appendChild(title);
-
-            var ci_details = document.createElement('div').class('ci-details').append(p);
-            var li = document.createElement('li').attr('id', id).class('collapse-item-folded').append(ci_title).append(ci_details);
-
-            listItem.id = id;
-
-            listItem.node = li;
-
-            listItem.uploading = function () {
+            this.prototype.uploading = function () {
                 li.class('collapse-item-uploading');
                 list.insert(li);
             };
 
-            listItem.uploaded = function (obj) {
+            this.prototype.uploaded = function (obj) {
                 li.class('collapse-item-folded');
                 ci_title.attr('href', 'javascript:onclick_fileitem("' + this.id + '")');
-                title.nodeValue = limitName(filename);
-                p.innerText = obj.url;
+                title.nodeValue = limitName(this.filename());
+                p.textContent = obj.url;
                 onclick_fileitem(this.id);
             };
 
-            listItem.updateProgress = function (event) {
+            this.prototype.updateProgress = function (event) {
+                var filename = this.filename();
                 if (event.lengthComputable) {
                     var percentComplete = Math.round(event.loaded * 100 / event.total);
                     title.nodeValue = '正在上传...: ' + limitName(filename) + ' ' + percentComplete.toString() + '%';
@@ -179,38 +163,66 @@
                 }
             };
 
-            listItem.remove = function () {
+            this.prototype.remove = function () {
                 delete items[this.id];
                 this.node.remove();
             };
 
-            listItem.filename = function () {
+            this.prototype.filename = function () {
                 return ci_title.attr('filename');
             };
 
-            listItem.link = function () {
-                return p.innerText;
+            this.prototype.link = function () {
+                return p.textContent;
             };
 
-            listItem.isFolded = function () {
+            this.prototype.isFolded = function () {
                 return li.class() === 'collapse-item-folded';
             }
 
-            listItem.fold = function () {
+            this.prototype.fold = function () {
                 li.class('collapse-item-folded');
             }
 
-            listItem.unfold = function () {
+            this.prototype.unfold = function () {
                 li.class('collapse-item-unfolded');
             }
 
-            listItem.selectText = function () {
+            this.prototype.selectText = function () {
                 selectText(p);
             };
 
-            items[id] = listItem;
+            items[id] = this;
+        }
 
-            return listItem;
+        var newId = function () {
+            return 'file' + itemCount++;
+        };
+
+        obj.initialize = function (id) {
+            containerDiv = document.getElementById(id);
+            list = containerDiv.getElementsByClassName('collapse-set')[0];
+            list.children().forEach(function (li) {
+                new ListItem(li);
+                itemCount++;
+            });
+        };
+
+        /*
+        * add an uploaded item to the item list
+        */
+        obj.addListItem = function (filename) {
+            // create HTML element
+            var id = newId();
+            var p = document.createElement('p').class('auto-select-text');
+            var title = document.createTextNode(limitName(filename));
+            var ci_title = document.createElement('a').class('ci-title').attr('filename', filename);
+            ci_title.appendChild(document.createElement('span')).appendChild(title);
+
+            var ci_details = document.createElement('div').class('ci-details').append(p);
+            var li = document.createElement('li').attr('id', id).class('collapse-item-folded').append(ci_title).append(ci_details);
+
+            return new ListItem(li);
         };
 
         obj.getListItemObj = function (id) {
@@ -268,39 +280,30 @@
                 var newFile = uploadList.addListItem(uploader.files[0].name);
 
                 var xhr = new XMLHttpRequest();
-
-                var eventHandler = 'attachEvent';
-                var eventPrefix = 'on';
-                if (xhr.addEventListener) {
-                    eventHandler = 'addEventListener';
-                    eventPrefix = '';
-                }
-                
                 if (xhr.upload) {
-                    xhr.upload[eventHandler](eventPrefix + 'progress', function (e) {
+                    xhr.upload.addEventListener('progress', function (e) {
                         newFile.updateProgress(e);
                     }, false);
                 }
-
-                xhr[eventHandler](eventPrefix + 'load', function (e) {
+                xhr.addEventListener('load', function (e) {
                     var obj = JSON.parse(e.target.responseText);
                     newFile.uploaded(obj);
                 }, false);
-                xhr[eventHandler](eventPrefix + 'error', function (e) {
+                xhr.addEventListener('error', function (e) {
                     alertBox("文件上传失败，请重试");
                     newFile.remove();
                 }, false);
-                xhr[eventHandler](eventPrefix + 'abort', function (e) {
+                xhr.addEventListener('abort', function (e) {
                     newFile.remove();
                 }, false);
-                                
+
                 xhr.open("POST", "/upload", true);
 
                 console.log(xhr.send(new FormData(form)));
                 newFile.uploading();
                 form.reset();
             }
-        }; 
+        };
     };
 
     /*
@@ -318,7 +321,7 @@
             text.push(allLinks[i].name + ':\n' + allLinks[i].link);
         }
         if (text.length > 0) {
-            popupWindow.showSelected(text.join('\n\n'), false);
+            popupWindow.showSelected(text.join('\n\n'), true);
         } else {
             alertBox('请先上传文件');
         }
@@ -329,7 +332,7 @@
     };
 
     window.alertBox = function (text) {
-        popupWindow.showMessage(text, true);
+        popupWindow.showMessage(text, false);
     };
 
     window.onclick_fileitem = function (id) {
@@ -343,4 +346,5 @@
         }
     };
 
+    window.limitName = limitName;
 })(window);

@@ -10,10 +10,14 @@
     <body>
         <div id="uploadList">
             <ul class="collapse-set">
-                <!--<li id="file1" class="collapse-item-folded">
-                    <a href="javascript:onclick_fileitem('file1')" class="ci-title" filename="123"><span>title</span></a>
-                    <div class="ci-details"><p class="auto-select-text">http://hello world</p></div>
-                </li>-->
+                <% fileList.forEach(function (file) { %>
+                <li id="file1" class="collapse-tiem-folded">
+                    <a href="javascript:onclick_fileitem('file1')" class="ci-title" filename="<% file.fileName %>">
+                        <span><% limitName(file.fileName) %></span>
+                    </a>
+                    <div class="ci-details"><p class="auto-select-text"><% file.url %></p></div>
+                </li>
+                <% });%>
             </ul>
         </div>
         <div id="popupWindow" class="hidden">
