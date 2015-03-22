@@ -17,5 +17,7 @@
     "TextUrlSuffix": "(%d小时内有效)",
     "AppName": "文件共享助手",
 
-    "UiCloseButton": "关闭"
+    "UiCloseButton": "关闭",
+    "UiShareTitle": "文件共享助手，用微信传文件",
+    "UiShareDescription": "简单几步，将您的手机/电脑上的文件发送给微信好友"
 }

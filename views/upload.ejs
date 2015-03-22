@@ -7,16 +7,22 @@
         <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
         <script type="text/javascript" src="../resources/mupload.js"></script>
         <script type="text/javascript">
-            var jsApiList = [ 'closeWindow' ];
+            var jsApiList = [ 'closeWindow', 'onMenuShareAppMessage', 'onMenuShareTimeline' ];
             wx.ready(function () {
-                wx.checkJsApi({
-                    jsApiList: jsApiList,
-                    success: function(res) {
-                        if (!res.checkResult.closeWindow) {
-                            console.log('Close Window is not supported by current version');
-                        }
+                var shareObj = {
+                    title: '<%= strings.UiShareTitle %>',
+                    desc: '<%= strings.UiShareDescription %>',
+                    link: '/upload',
+                    imgUrl: '../resources/upload-icon.png',
+                    type: 'link',
+                    dataUrl: '',
+                    success: function () { 
+                    },
+                    cancel: function () { 
                     }
-                });
+                };
+                wx.onMenuShareAppMessage(shareObj);
+                wx.onMenuShareTimeline(shareObj);
             });
             wx.error(function () {
                 var xhr = new XMLHttpRequest();
@@ -39,7 +45,7 @@
             window.InWechat = <%= userAgent.inWechat %>;
             window.IsMobile = <%= userAgent.isMobile %>;
         </script>
-        <title><%= title %></title>
+        <title><%= strings.AppName %></title>
     </head>
     <body>
         <div id="uploadList">
