@@ -152,6 +152,7 @@
             this.li.class('collapse-item-folded');
             this.title.nodeValue = limitName(this.filename());
             this.p.textContent = obj.url;
+            this.ci_details.style.width = 'auto';
             onclick_fileitem(this.id);
         };
 
@@ -163,7 +164,9 @@
                 //this.ci_title.style.opacity = percentComplete / 100;
                 //// for ie
                 //this.ci_title.style.filter = 'alpha(opacity=' + percentComplete + ')';
-                this.ci_details.style.width = percentComplete + '%';
+                if (percentComplete >= 2) {
+                    this.ci_details.style.width = (percentComplete - 2) + '%';
+                }
                 this.p.textContent = percentComplete + '%';
             }
             else {
@@ -279,10 +282,6 @@
         popupWindow.initialize('popupWindow');
         uploadList.initialize('uploadList');
 
-        if (detectIeMobile() && detectWechat()) {
-            alertBox('您的微信可能无法正确使用上传功能，请点击右下角菜单并选择“在IE中打开”来进行操作');
-        }
-
         uploader.onchange = function (ev) {
             if (uploader.value !== '' && !!uploader.files && uploader.files.length === 1) {
                 if (uploader.files[0].size > maxFileSize) {
@@ -327,7 +326,11 @@
     */
     window.onclick_add = function () {
         var uploader = document.getElementById("uploader");
-        uploader.click();
+        if (IeMobile && InWechat) {
+            alertBox('您使用的微信版本不支持上传文件，请点击右下角菜单“在IE中打开”进行操作');
+        } else {
+            uploader.click();
+        }
     };
 
     window.onclick_all = function () {
@@ -344,7 +347,7 @@
     };
 
     window.onclick_close = function () {
-        if (detectWechat()) {
+        if (InWechat) {
             wx.closeWindow();
         } else {
             window.close();
@@ -369,11 +372,11 @@
         }
     };
 
-    window.detectWechat = function () {
-        return (navigator.userAgent || navigator.vendor || window.opera).indexOf('MicroMessenger') !== -1;
-    };
+    //window.detectWechat = function () {
+    //    return (navigator.userAgent || navigator.vendor || window.opera).indexOf('MicroMessenger') !== -1;
+    //};
 
-    window.detectIeMobile = function () {
-        return (navigator.userAgent || navigator.vendor || window.opera).indexOf('IEMobile') !== -1;
-    };
+    //window.detectIeMobile = function () {
+    //    return (navigator.userAgent || navigator.vendor || window.opera).indexOf('IEMobile') !== -1;
+    //};
 })(window);

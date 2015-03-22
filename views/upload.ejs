@@ -35,6 +35,9 @@
                 xhr.open("POST", "<%= updateSignUrl %>", true);
                 xhr.send(window.location.href);
             });
+            window.IeMobile = <%= userAgent.ieMobile %>;
+            window.InWechat = <%= userAgent.inWechat %>;
+            window.IsMobile = <%= userAgent.isMobile %>;
         </script>
         <title><%= title %></title>
     </head>

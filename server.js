@@ -45,7 +45,7 @@ app.get(config.route.resources + ":name", utilities.getResources(''));
 // upload file page
 app.route(config.route.upload)
 .get(function (req, res) {
-    res.render("upload", { maxFileSize: maxFileSize, userId: '' });
+    renderUploadPage(req, res, '');
 })
 .post(function (req, res) {
     var busboy = new Busboy({ headers: req.headers, limits: { fileSize: maxFileSize, files: 1} });
@@ -101,7 +101,7 @@ app.route(config.route.upload)
 
 // upload with user open id
 app.get(config.route.upload + ':userid', function (req, res) {
-    renderUploadEjs(res, req.params.userid, []);
+    renderUploadPage(req, res, req.params.userid);
 });
 
 // fetch shared files
@@ -124,8 +124,12 @@ app.get(config.route.show + ':code', function (req, res) {
             logger.trace('file info:\n%s', util.inspect(file));
         });
 
-        renderUploadEjs(res, userid, fileList);
-        //res.render("showupload", { fileList: fileList });
+        var userAgent = utilities.parseUserAgent(req);
+        if (userAgent.isMobile) {
+            renderUploadEjs(res, userAgent, userid, fileList);
+        } else {
+            res.render("showupload", { fileList: fileList });
+        }
     });
 });
 
@@ -161,13 +165,23 @@ app.post(config.route.updateSign, function (req, res) {
     })
 });
 
-var renderUploadEjs = function (res, userid, fileList) {
+var renderUploadPage = function (req, res, userid) {
+    var userAgent = utilities.parseUserAgent(req);
+    if (userAgent.isMobile) {
+        renderUploadEjs(res, userAgent, userid, []);
+    } else {
+        res.render("upload", { maxFileSize: maxFileSize, userId: userid });
+    }
+}
+
+var renderUploadEjs = function (res, userAgent, userid, fileList) {
     userid = wxInterface.verifyUserId(userid);
     var src = fs.readFileSync('./views/upload.ejs', 'utf8');
-    var ret = ejs.compile(src)({ strings: Strings, updateSignUrl: config.route.updateSign, title: Strings.AppName, maxFileSize: maxFileSize, userId: userid, fileList: fileList });
+    var ret = ejs.compile(src)({ userAgent: userAgent, strings: Strings, updateSignUrl: config.route.updateSign, title: Strings.AppName, maxFileSize: maxFileSize, userId: userid, fileList: fileList });
 
     res.send(ret);
 }
+
 
 app.listen(port);
 logger.info('Express started on port ' + port);
