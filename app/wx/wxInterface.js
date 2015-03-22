@@ -119,7 +119,78 @@ var wxInterface = (function () {
         }
     };
 
+    var requestAccessTokenUrl = function () {
+        return util.format(config.requestAccessTokenUrlPattern, config.appId, config.appSecret);
+    };
+
+    var requestApiTicketUrl = function (accessToken) {
+        return util.format(config.requestApiTicketUrlPattern, accessToken);
+    };
+
     var interface = {};
+
+    var apiTicketExpiresIn = config.ticketUpdatePeriodInMs;
+    var accessTokenExpiresIn = config.accessTokenUpdatePeriodInMs;
+
+    interface.apiTicket = '';
+    interface.accessToken = '';
+
+    // update the jdk ticket
+    var updateAccessToken = function () {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                var data = JSON.parse(xhr.responseText);
+                if (data.access_token) {
+                    interface.accessToken = data.access_token;
+                    accessTokenExpiresIn = data.expires_in;
+                    logger.info(util.format('access token: %s', data.access_token));
+                    logger.info(util.format('access token expires in: %d', data.expires_in));
+                } else {
+                    logger.error(util.format('failed to get the access token from wechat server: %s', util.inspect(data)));
+                }
+            }
+        };
+        xhr.open('GET', requestAccessTokenUrl(), true);
+        xhr.send();
+    };
+
+    var updateApiTicket = function () {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                var ret = JSON.parse(xhr.responseText);
+                if (ret.errcode === 0) {
+                    interface.apiTicket = ret.ticket;
+                    apiTicketExpiresIn = ret.expires_in;
+                    logger.info(util.format('api ticket: %s', ret.ticket));
+                    logger.info(util.format('api ticket expires in: %d', ret.expires_in));
+                } else {
+                    logger.error(util.format('failed to update the api ticket from wechat server: %s', util.inspect(ret)));
+                }
+            }
+        };
+        xhr.open('GET', requestApiTicketUrl(interface.accessToken), true);
+        xhr.send();
+    };
+
+    var updateAccessTokenContinuously = function (interval) {
+        setTimeout(function () {
+            updateAccessToken();
+            updateAccessTokenContinuously(accessTokenExpiresIn);
+        }, interval);
+    };
+
+    var updateApiTicketContinuously = function (interval) {
+        setTimeout(function () {
+            updateApiTicket();
+            updateApiTicketContinuously(apiTicketExpiresIn);
+        }, interval);
+    };
+
+    updateAccessTokenContinuously(accessTokenExpiresIn);
+    updateApiTicketContinuously(apiTicketExpiresIn);
+
     interface.httpPostHandler = function (req, res) {
         if (!checkSignature(req.query)) {
             logger.info('Invalid Signature. Not a weixin request');
@@ -165,6 +236,51 @@ var wxInterface = (function () {
         }
         return userid;
     };
+
+    interface.makeSignForSdk = (function () {
+        var createNonceStr = function () {
+            return Math.random().toString(36).substr(2, 15);
+        };
+
+        var createTimestamp = function () {
+            return parseInt(new Date().getTime() / 1000) + '';
+        };
+
+        var raw = function (args) {
+            var keys = Object.keys(args);
+            keys = keys.sort()
+            var newArgs = {};
+            keys.forEach(function (key) {
+                newArgs[key.toLowerCase()] = args[key];
+            });
+
+            var string = '';
+            for (var k in newArgs) {
+                string += '&' + k + '=' + newArgs[k];
+            }
+            string = string.substr(1);
+            return string;
+        };
+
+        return function (jsapi_ticket, url) {
+            var ret = {
+                jsapi_ticket: jsapi_ticket,
+                nonceStr: createNonceStr(),
+                timestamp: createTimestamp(),
+                url: url
+            };
+            var string = raw(ret);
+            //jsSHA = require('jssha');
+            //shaObj = new jsSHA(string, 'TEXT');
+            //ret.signature = shaObj.getHash('SHA-1', 'HEX');
+            var shasum = crypto.createHash('sha1');
+            shasum.update(string);
+            ret.signature = shasum.digest('hex');
+
+            return ret;
+        };
+    })();
+
 
     return interface;
 })();

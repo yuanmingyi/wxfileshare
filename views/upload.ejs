@@ -6,7 +6,37 @@
         <link type="text/css" rel="stylesheet" href="../resources/mupload.css" />
         <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
         <script type="text/javascript" src="../resources/mupload.js"></script>
-        <title></title>
+        <script type="text/javascript">
+            var jsApiList = [ 'closeWindow' ];
+            wx.read(function () {
+                wx.checkJsApi({
+                    jsApiList: jsApiList,
+                    success: function(res) {
+                        if (!res.checkResult.closeWindow) {
+                            alert('Close Window is not supported by current version');
+                        }
+                    }
+                )
+            });
+            wx.error(function () {
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        var wxConfig = JSON.parse(xhr.responseText);
+                        wx.config({
+                            appId: wxConfig.appId,
+                            timestamp: wxConfig.timestamp,
+                            nonceStr: wxConfig.nonceStr,
+                            signature: wxConfig.signature,
+                            jsApiList: jsApiList
+                        });
+                    }
+                };
+                xhr.open("POST", <%= updateSignUrl %>, true);
+                xhr.send(window.location.href);
+            });
+        </script>
+        <title><% title %>></title>
     </head>
     <body>
         <div id="uploadList">

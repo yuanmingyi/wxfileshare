@@ -8,7 +8,8 @@
         "upload": "/upload/",
         "download": "/download/",
         "resources": "/resources/",
-        "show": "/show/"
+        "show": "/show/",
+        "updateSign": "/updateConfig"
     },
     "testUserId": "@diandian"
 }

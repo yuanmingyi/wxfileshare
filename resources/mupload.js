@@ -341,7 +341,11 @@
     };
 
     window.onclick_close = function () {
-        window.close();
+        if (wx) {
+            wx.closeWindow();
+        } else {
+            window.close();
+        }
     };
 
     window.alertBox = function (text) {
