@@ -334,22 +334,21 @@
         var allLinks = uploadList.getAllLinks();
         var text = [];
         for (var i = 0; i < allLinks.length; i++) {
-            text.push(allLinks[i].name + ':\n' + allLinks[i].link);
+            text.push(allLinks[i].name + ': ' + allLinks[i].link);
         }
         if (text.length > 0) {
-            popupWindow.showSelected(text.join('\n\n'), false);
+            popupWindow.showSelected(text.join('\r\n'), false);
         } else {
             alertBox('请先上传文件');
         }
     };
 
     window.onclick_close = function () {
-        //if (detectWechat()) {
-        //    wx.closeWindow();
-        //} else {
-        //    window.close();
-        //}
-        alertBox(navigator.userAgent || navigator.vendor || window.opera);
+        if (detectWechat()) {
+            wx.closeWindow();
+        } else {
+            window.close();
+        }
     };
 
     window.alertBox = function (text) {

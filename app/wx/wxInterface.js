@@ -57,7 +57,7 @@ var wxInterface = (function () {
                                 if (!success) {
                                     onComplete(Strings.WxReadUploadFailed);
                                 } else {
-                                    message = Strings.WxReadUploadFailed;
+                                    message = Strings.WxUploadedLinks;
                                     var length = files.length < config.showFileCount ? files.length : config.showFileCount;
                                     for (var i = 0; i < length; i++) {
                                         message += '\r\n' + utilities.getUrlText(utilities.makeDownloadUrl(req, files[i].hashCode), files[i].createDate);
