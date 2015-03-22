@@ -279,6 +279,10 @@
         popupWindow.initialize('popupWindow');
         uploadList.initialize('uploadList');
 
+        //if (detectIeMobile() && detectWechat()) {
+            alertBox('您的微信可能无法正确使用上传功能，请点击菜单并选择“在IE中打开”来进行操作');
+        //}
+
         uploader.onchange = function (ev) {
             if (uploader.value !== '' && !!uploader.files && uploader.files.length === 1) {
                 if (uploader.files[0].size > maxFileSize) {
@@ -323,11 +327,7 @@
     */
     window.onclick_add = function () {
         var uploader = document.getElementById("uploader");
-        if (detectIeMobile() && detectWechat()) {
-            alertBox('您的微信不支持上传文件，请点击菜单并选择“在IE中打开”来进行操作');
-        } else {
-            uploader.click();
-        }
+        uploader.click();
     };
 
     window.onclick_all = function () {

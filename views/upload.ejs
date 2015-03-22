@@ -13,7 +13,7 @@
                     jsApiList: jsApiList,
                     success: function(res) {
                         if (!res.checkResult.closeWindow) {
-                            alertBox('Close Window is not supported by current version');
+                            console.log('Close Window is not supported by current version');
                         }
                     }
                 });
@@ -36,7 +36,7 @@
                 xhr.send(window.location.href);
             });
         </script>
-        <title><%= title %>></title>
+        <title><%= title %></title>
     </head>
     <body>
         <div id="uploadList">
