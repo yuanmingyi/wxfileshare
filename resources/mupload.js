@@ -279,9 +279,9 @@
         popupWindow.initialize('popupWindow');
         uploadList.initialize('uploadList');
 
-        //if (detectIeMobile() && detectWechat()) {
-            alertBox('您的微信可能无法正确使用上传功能，请点击菜单并选择“在IE中打开”来进行操作');
-        //}
+        if (detectIeMobile() && detectWechat()) {
+            alertBox('您的微信可能无法正确使用上传功能，请点击右下角菜单并选择“在IE中打开”来进行操作');
+        }
 
         uploader.onchange = function (ev) {
             if (uploader.value !== '' && !!uploader.files && uploader.files.length === 1) {
