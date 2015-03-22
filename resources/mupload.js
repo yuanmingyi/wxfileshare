@@ -111,7 +111,7 @@
         obj.initialize = function (id) {
             element = document.getElementById(id);
             p = element.getElementsByTagName('p')[0];
-            element.parentNode.onclick = element.onclick = function () {
+            element.onclick = function () {
                 element.class('hidden');
             };
         }
@@ -136,6 +136,7 @@
             this.ci_title.getElementsByTagName('span')[0].appendChild(this.title);
             this.ci_title.attr('href', 'javascript:onclick_fileitem("' + this.id + '")');
             this.p = li.getElementsByClassName('auto-select-text')[0];
+            this.ci_details = li.getElementsByClassName('ci-details')[0];
 
             li.attr('id', id);
             items[id] = this;
@@ -158,13 +159,15 @@
             var filename = this.filename();
             if (event.lengthComputable) {
                 var percentComplete = Math.round(event.loaded * 100 / event.total);
-                this.title.nodeValue = '正在上传...: ' + limitName(filename) + ' ' + percentComplete.toString() + '%';
-                this.ci_title.style.opacity = percentComplete / 100;
-                // for ie
-                this.ci_title.style.filter = 'alpha(opacity=' + percentComplete + ')';
+                this.title.nodeValue = "正在上传: " + limitName(filename);
+                //this.ci_title.style.opacity = percentComplete / 100;
+                //// for ie
+                //this.ci_title.style.filter = 'alpha(opacity=' + percentComplete + ')';
+                this.ci_details.style.width = percentComplete + '%';
+                this.p.textContent = percentComplete + '%';
             }
             else {
-                this.title.nodeValue = limitName(filename) + ' ??%';
+                this.title.nodeValue = "正在上传: " + limitName(filename);
             }
         };
 
@@ -308,7 +311,7 @@
 
                 xhr.open("POST", "/upload", true);
 
-                console.log(xhr.send(new FormData(form)));
+                xhr.send(new FormData(form));
                 newFile.uploading();
                 form.reset();
             }
@@ -320,8 +323,8 @@
     */
     window.onclick_add = function () {
         var uploader = document.getElementById("uploader");
-        if (uploader.disabled) {
-            alertBox('您的微信版本不支持上传文件，请点击菜单选择“在IE中打开”来进行操作');
+        if (detectIeMobile() && detectWechat()) {
+            alertBox('您的微信不支持上传文件，请点击菜单并选择“在IE中打开”来进行操作');
         } else {
             uploader.click();
         }
@@ -341,7 +344,7 @@
     };
 
     window.onclick_close = function () {
-        if (wx) {
+        if (detectWechat()) {
             wx.closeWindow();
         } else {
             window.close();
@@ -364,5 +367,13 @@
         } else {
             item.fold();
         }
+    };
+
+    window.detectWechat = function () {
+        return (navigator.userAgent || navigator.vendor || window.opera).indexOf('MicroMessenger') !== -1;
+    };
+
+    window.detectIeMobile = function () {
+        return (navigator.userAgent || navigator.vendor || window.opera).indexOf('IEMobile') !== -1;
     };
 })(window);

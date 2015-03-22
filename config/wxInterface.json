@@ -5,9 +5,9 @@
   "appId": "wx32bb357787fcad9c",
   "appSecret": "258b0443a0213441ca9016e9157cc316",
   "wxid": "gongxiangzhushou",
-  "showFileCount": 3,
-  "ticketUpdatePeriodInMs": 7200,
-  "accessTokenUpdatePeriodInMs": 7200,
+  "showFileCount": 1,
+  "ticketUpdatePeriodInMs": 10000,
+  "accessTokenUpdatePeriodInMs": 10000,
   "requestAccessTokenUrlPattern": "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s",
   "requestApiTicketUrlPattern": "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=%s&type=jsapi"
 }

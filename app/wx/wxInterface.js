@@ -5,9 +5,11 @@ var wxInterface = (function () {
     var utilities = require(__dirname + '/../utilities');
     var Strings = require(__dirname + '/../Strings');
 
+    var url = require('url');
     var util = require('util');
     var xmlParser = require('xml2js').Parser();
     var crypto = require('crypto');
+    var https = require('https');
 
     var token = config.token;
     var encodingAesKey = config.encodingAesKey;
@@ -58,7 +60,7 @@ var wxInterface = (function () {
                                     message = Strings.WxUploadedLinks;
                                     var length = files.length < config.showFileCount ? files.length : config.showFileCount;
                                     for (var i = 0; i < length; i++) {
-                                        message += '\n' + files[i].fileName + ' ' + utilities.makeDownloadUrl(req, files[i].hashCode);
+                                        message += '\n' + files[i].fileName + ':\n' + utilities.getUrlText(utilities.makeDownloadUrl(req, files[i].hashCode), files[i].createDate) + '\n';
                                     }
                                     onComplete(makeMessageData(userid, myid, new Date().getTime() / 1000, message));
                                 }
@@ -137,41 +139,60 @@ var wxInterface = (function () {
 
     // update the jdk ticket
     var updateAccessToken = function () {
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                var data = JSON.parse(xhr.responseText);
-                if (data.access_token) {
-                    interface.accessToken = data.access_token;
-                    accessTokenExpiresIn = data.expires_in;
-                    logger.info(util.format('access token: %s', data.access_token));
-                    logger.info(util.format('access token expires in: %d', data.expires_in));
-                } else {
-                    logger.error(util.format('failed to get the access token from wechat server: %s', util.inspect(data)));
-                }
-            }
+        var urlInfo = url.parse(requestAccessTokenUrl());
+        var options = {
+            hostname: urlInfo.hostname,
+            path: urlInfo.path,
+            method: 'POST'
         };
-        xhr.open('GET', requestAccessTokenUrl(), true);
-        xhr.send();
+        var req = https.request(options, function (res) {
+            var data = '';
+            res.on('data', function (chunk) {
+                data += chunk;
+            });
+            res.on('end', function () {
+                var ret = JSON.parse(data);
+                if (ret.access_token) {
+                    interface.accessToken = ret.access_token;
+                    accessTokenExpiresIn = ret.expires_in * 1000;
+                    logger.info(util.format('access token: %s', ret.access_token));
+                    logger.info(util.format('access token expires in: %d (s)', ret.expires_in));
+                } else {
+                    logger.error(util.format('failed to get the access token from wechat server: %s', util.inspect(ret)));
+                }
+            });
+        });
+        req.end();
     };
 
     var updateApiTicket = function () {
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                var ret = JSON.parse(xhr.responseText);
+        if (interface.accessToken === '') {
+            return;
+        }
+        var urlInfo = url.parse(requestApiTicketUrl(interface.accessToken));
+        var options = {
+            hostname: urlInfo.hostname,
+            path: urlInfo.path,
+            method: 'POST'
+        };
+        var req = https.request(options, function (res) {
+            var data = '';
+            res.on('data', function (chunk) {
+                data += chunk;
+            });
+            res.on('end', function () {
+                var ret = JSON.parse(data);
                 if (ret.errcode === 0) {
                     interface.apiTicket = ret.ticket;
-                    apiTicketExpiresIn = ret.expires_in;
+                    apiTicketExpiresIn = ret.expires_in * 1000;
                     logger.info(util.format('api ticket: %s', ret.ticket));
-                    logger.info(util.format('api ticket expires in: %d', ret.expires_in));
+                    logger.info(util.format('api ticket expires in: %d (s)', ret.expires_in));
                 } else {
                     logger.error(util.format('failed to update the api ticket from wechat server: %s', util.inspect(ret)));
                 }
-            }
-        };
-        xhr.open('GET', requestApiTicketUrl(interface.accessToken), true);
-        xhr.send();
+            });
+        });
+        req.end();
     };
 
     var updateAccessTokenContinuously = function (interval) {

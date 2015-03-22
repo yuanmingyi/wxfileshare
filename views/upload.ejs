@@ -8,7 +8,7 @@
         <script type="text/javascript" src="../resources/mupload.js"></script>
         <script type="text/javascript">
             var jsApiList = [ 'closeWindow' ];
-            wx.read(function () {
+            wx.ready(function () {
                 wx.checkJsApi({
                     jsApiList: jsApiList,
                     success: function(res) {
@@ -16,7 +16,7 @@
                             alert('Close Window is not supported by current version');
                         }
                     }
-                )
+                });
             });
             wx.error(function () {
                 var xhr = new XMLHttpRequest();
@@ -32,11 +32,11 @@
                         });
                     }
                 };
-                xhr.open("POST", <%= updateSignUrl %>, true);
+                xhr.open("POST", "<%= updateSignUrl %>", true);
                 xhr.send(window.location.href);
             });
         </script>
-        <title><% title %>></title>
+        <title><%= title %>></title>
     </head>
     <body>
         <div id="uploadList">
@@ -53,6 +53,7 @@
         </div>
         <div id="popupWindow" class="hidden">
             <p></p>
+            <div><span><%= strings.UiCloseButton %></span></div>
         </div>
         <div id="footer">
             <div id="cell1"><a id="allButton" href="javascript:onclick_all()" class="icon-button"><span>all</span></a></div>

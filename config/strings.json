@@ -14,5 +14,8 @@
     "ResDownloadFailed": "Download failed",
     "ResUnexpectedError": "Unexpected error occured!",
 
-    "TextUrlSuffix": "(%d小时内有效)"
+    "TextUrlSuffix": "(%d小时内有效)",
+    "AppName": "文件共享助手",
+
+    "UiCloseButton": "关闭"
 }

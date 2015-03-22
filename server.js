@@ -156,7 +156,7 @@ app.post(config.route.updateSign, function (req, res) {
         url += chunk;
     });
     req.on('end', function () {
-        var wxConfig = wxInterface.makeSignForSdk(wxInterface.jdkTicket, url);
+        var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, url);
         res.send(JSON.stringify(wxConfig));
     })
 });
@@ -164,7 +164,7 @@ app.post(config.route.updateSign, function (req, res) {
 var renderUploadEjs = function (res, userid, fileList) {
     userid = wxInterface.verifyUserId(userid);
     var src = fs.readFileSync('./views/upload.ejs', 'utf8');
-    var ret = ejs.compile(src)({ updateSignUrl: config.route.updateSign, maxFileSize: maxFileSize, userId: userid, fileList: fileList });
+    var ret = ejs.compile(src)({ strings: Strings, updateSignUrl: config.route.updateSign, title: Strings.AppName, maxFileSize: maxFileSize, userId: userid, fileList: fileList });
 
     res.send(ret);
 }

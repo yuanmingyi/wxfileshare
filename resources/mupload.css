@@ -76,11 +76,11 @@ li[class^=collapse-item] > .ci-details {
     word-wrap: break-word;
     text-align: center;
     background-color: #eeeeee;
-    display: none;
+    display: block;
 }
 
-li.collapse-item-unfolded > .ci-details {
-    display: block;
+li.collapse-item-folded > .ci-details {
+    display: none;
 }
 
 #popupWindow {
@@ -89,9 +89,11 @@ li.collapse-item-unfolded > .ci-details {
     text-align: center;
     left: 18%;
     right: 18%;
-    bottom: 40px;
     top: 40px;
+    bottom: 40px;
     padding: 1%;
+    font-family: 'Segoe UI';
+    font-size: 150%;
     border: 5px dashed rgba(255, 255, 255, 0.5);
     background-color: rgba(225, 225, 225, 0.5);
     z-index: 2;
@@ -109,9 +111,23 @@ li.collapse-item-unfolded > .ci-details {
     border-style: solid;
 }
 
-#popupWindow > p {
-    font-family: 'Segoe UI';
-    font-size: 150%;
+#popupWindow.auto-size > div {
+    display: none;
+}
+
+#popupWindow > div {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+}
+
+#popupWindow > div > span {
+    background-color: rgba(255, 255, 255, 0.7);
+    width: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 5px 10px;
 }
 
 #footer {
@@ -198,8 +214,9 @@ li.collapse-item-unfolded > .ci-details {
     }
 
     #popupWindow.fixed-size {
-        left: 25%;
-        right: 25%;
+        left: 50%;
+        margin-left: -160px;
+        width: 320px;
     }
 
     #uploadList {
@@ -233,14 +250,15 @@ li.collapse-item-unfolded > .ci-details {
     }
 }
 
-@media (min-height:320px) {
+@media (min-height:480px) {
     #popupWindow.auto-size {
         top: 10%;
         bottom: 15%;
     }
 
     #popupWindow.fixed-size {
-        top: 35%;
-        bottom: 35%;
+        top: 50%;
+        margin-top: -160px;
+        height: 320px;
     }
 }
