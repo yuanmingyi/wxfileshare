@@ -344,11 +344,12 @@
     };
 
     window.onclick_close = function () {
-        if (detectWechat()) {
-            wx.closeWindow();
-        } else {
-            window.close();
-        }
+        //if (detectWechat()) {
+        //    wx.closeWindow();
+        //} else {
+        //    window.close();
+        //}
+        alertBox(navigator.userAgent || navigator.vendor || window.opera);
     };
 
     window.alertBox = function (text) {

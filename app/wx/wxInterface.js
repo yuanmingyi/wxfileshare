@@ -57,10 +57,10 @@ var wxInterface = (function () {
                                 if (!success) {
                                     onComplete(Strings.WxReadUploadFailed);
                                 } else {
-                                    message = Strings.WxUploadedLinks;
+                                    message = Strings.WxReadUploadFailed;
                                     var length = files.length < config.showFileCount ? files.length : config.showFileCount;
                                     for (var i = 0; i < length; i++) {
-                                        message += '\n' + files[i].fileName + ':\n' + utilities.getUrlText(utilities.makeDownloadUrl(req, files[i].hashCode), files[i].createDate) + '\n';
+                                        message += '\r\n' + utilities.getUrlText(utilities.makeDownloadUrl(req, files[i].hashCode), files[i].createDate);
                                     }
                                     onComplete(makeMessageData(userid, myid, new Date().getTime() / 1000, message));
                                 }

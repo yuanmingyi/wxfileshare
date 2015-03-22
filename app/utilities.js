@@ -107,7 +107,7 @@ obj.getResources = function (path) {
 };
 
 obj.getUrlText = function (url, date) {
-    return util.format(url + ' ' + Strings.TextUrlSuffix, Math.floor(azureConfig.expiredPeriodInHour - (new Date() - date) / 3600000));
+    return util.format(url + '\r\n' + Strings.TextUrlSuffix, Math.floor(azureConfig.expiredPeriodInHour - (new Date() - date) / 3600000));
 };
 
 obj.guid = function () {
