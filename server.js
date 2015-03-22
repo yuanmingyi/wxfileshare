@@ -75,7 +75,7 @@ app.route(config.route.upload)
                     if (result) {
                         logger.trace("File %s (%d bytes) upload succeeded", filename, fileData.length);
                         var downloadUrl = utilities.makeDownloadUrl(req, hashcode);
-                        utilities.sendSafeResponse(res, 200, { filename: filename, url: downloadUrl, truncated: file.truncated });
+                        utilities.sendSafeResponse(res, 200, { filename: filename, url: utilities.getUrlText(downloadUrl, new Date()), truncated: file.truncated });
                     } else {
                         logger.info("File %s upload failed", filename);
                         utilities.sendSafeResponse(res, 500, Strings.ResUploadFailed);
@@ -120,7 +120,7 @@ app.get(config.route.show + ':code', function (req, res) {
             return;
         }
         fileList.forEach(function (file) {
-            file.url = utilities.makeDownloadUrl(req, file.hashCode);
+            file.url = utilities.getUrlText(utilities.makeDownloadUrl(req, file.hashCode), file.createDate);
             logger.trace('file info:\n%s', util.inspect(file));
         });
 

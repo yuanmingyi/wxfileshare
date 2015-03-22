@@ -51,13 +51,17 @@ var wxInterface = (function () {
                             message = Strings.getString('WxUploadHint', utilities.makeUploadUrl(req, userid));
                         } else if (text.indexOf('s') === 0) {
                             // request for showing files that already uploaded, return all the urls of the uploaded files
-                            sharingFiles.sharedFiles(userid, function (files) {
-                                message = Strings.WxUploadedLinks;
-                                var length = files.length < config.showFileCount ? files.length : config.showFileCount;
-                                for (var i = 0; i < length; i++) {
-                                    message += '\n' + files[i].fileName + ' ' + utilities.makeDownloadUrl(req, files[i].hashCode);
+                            sharingFiles.sharedFiles(userid, function (success, files) {
+                                if (!success) {
+                                    onComplete(Strings.WxReadUploadFailed);
+                                } else {
+                                    message = Strings.WxUploadedLinks;
+                                    var length = files.length < config.showFileCount ? files.length : config.showFileCount;
+                                    for (var i = 0; i < length; i++) {
+                                        message += '\n' + files[i].fileName + ' ' + utilities.makeDownloadUrl(req, files[i].hashCode);
+                                    }
+                                    onComplete(makeMessageData(userid, myid, new Date().getTime() / 1000, message));
                                 }
-                                onComplete(makeMessageData(userid, myid, new Date().getTime() / 1000, message));
                             });
                             return;
                         } else if (text.indexOf('a') === 0) {

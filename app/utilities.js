@@ -1,6 +1,8 @@
 var util = require('util');
 var config = require(__dirname + '/config').load("server");
+var azureConfig = require(__dirname + '/config').load('azure-storage');
 var logger = require(__dirname + '/logger').logger();
+var Strings = require(__dirname + '/Strings');
 
 var obj = {};
 
@@ -102,6 +104,10 @@ obj.getResources = function (path) {
             }
         });
     };
+};
+
+obj.getUrlText = function (url, date) {
+    return util.format(url + ' ' + Strings.TextUrlSuffix, Math.floor(azureConfig.expiredPeriodInHour - (new Date() - date) / 3600000));
 };
 
 obj.guid = function () {
