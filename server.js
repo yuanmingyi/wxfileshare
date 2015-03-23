@@ -42,6 +42,10 @@ app.route(config.route.wx)
 app.get(config.route.resources + "qrcode/:name", utilities.getResources('qrcode/'));
 app.get(config.route.resources + ":name", utilities.getResources(''));
 
+app.route(config.route.debug + ':path', function (req, res) {
+    res.redirect(config.route.root + req.params.path);
+});
+
 // upload file page
 app.route(config.route.upload)
 .get(function (req, res) {
