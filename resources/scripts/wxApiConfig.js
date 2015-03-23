@@ -7,7 +7,7 @@ var jsApiList = [
 ];
 
 wx.config({
-    debug: false,
+    debug: <%= wxConfig.debug %>,
     appId: '<%= wxConfig.appId %>',
     timestamp: <%= wxConfig.timestamp %>,
     nonceStr: '<%= wxConfig.nonceStr %>',
@@ -24,7 +24,7 @@ wx.error(function () {
         if (xhr.readyState === 4) {
             var wxConfig = JSON.parse(xhr.responseText);
             wx.config({
-                debug: false,
+                debug: <%= wxConfig.debug %>,
                 appId: wxConfig.appId,
                 timestamp: wxConfig.timestamp,
                 nonceStr: wxConfig.nonceStr,

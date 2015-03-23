@@ -137,7 +137,7 @@ var wxInterface = (function () {
     interface.apiTicket = '';
     interface.accessToken = '';
 
-    // update the jdk ticket
+    // update the sdk ticket
     var updateAccessToken = function () {
         var urlInfo = url.parse(requestAccessTokenUrl());
         var options = {
@@ -288,7 +288,8 @@ var wxInterface = (function () {
                 jsapi_ticket: jsapi_ticket,
                 nonceStr: createNonceStr(),
                 timestamp: createTimestamp(),
-                url: url
+                url: url,
+                appId: config.appId
             };
             var string = raw(ret);
             //jsSHA = require('jssha');

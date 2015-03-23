@@ -45,7 +45,8 @@ app.get(config.route.resources + "wxApiConfig.js", function (req, res) {
     var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, utilities.getFullUrl(req));
     wxConfig.updateSignUrl = config.route.updateSign;
     wxConfig.shareLink = config.route.upload;
-    wxConfig.shareImageLink = config.route.resources + 'upload-icon.png';    
+    wxConfig.shareImageLink = config.route.resources + 'upload-icon.png';
+    wxConfig.debug = !!process.env.__DEBUG;
     var src = fs.readFileSync(path, 'utf8');
     var ret = ejs.compile(src)({ wxConfig: wxConfig, strings: Strings });
 
