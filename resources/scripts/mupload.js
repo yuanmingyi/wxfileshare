@@ -161,11 +161,11 @@
             if (event.lengthComputable) {
                 var percentComplete = Math.round(event.loaded * 100 / event.total);
                 this.title.nodeValue = "正在上传: " + limitName(filename);
-                //this.ci_title.style.opacity = percentComplete / 100;
-                //// for ie
-                //this.ci_title.style.filter = 'alpha(opacity=' + percentComplete + ')';
-                if (percentComplete >= 2) {
-                    this.ci_details.style.width = (percentComplete - 2) + '%';
+                this.ci_title.style.opacity = percentComplete / 100;
+                // for ie
+                this.ci_title.style.filter = 'alpha(opacity=' + percentComplete + ')';
+                if (percentComplete >= 4) {
+                    this.ci_details.style.width = (percentComplete - 4) + '%';
                 }
                 this.p.textContent = percentComplete + '%';
             }

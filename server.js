@@ -142,7 +142,7 @@ app.get(config.route.show + ':code', function (req, res) {
         });
 
         var userAgent = utilities.parseUserAgent(req);
-        if (userAgent.isMobile) {
+        if (userAgent.isMobile || req.query.testmobile) {
             renderUploadEjs(res, userAgent, userid, fileList);
         } else {
             res.render("showupload", { fileList: fileList });
@@ -184,7 +184,7 @@ app.post(config.route.updateSign, function (req, res) {
 
 var renderUploadPage = function (req, res, userid) {
     var userAgent = utilities.parseUserAgent(req);
-    if (userAgent.isMobile || req.query.testMobile) {
+    if (userAgent.isMobile || req.query.testmobile) {
         renderUploadEjs(res, userAgent, userid, []);
     } else {
         res.render("upload", { maxFileSize: maxFileSize, userId: userid });
