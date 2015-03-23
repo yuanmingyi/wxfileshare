@@ -6,6 +6,10 @@ var Strings = require(__dirname + '/Strings');
 
 var obj = {};
 
+obj.getFullUrl = function (req) {
+    return req.protocol + '://' + req.get('host') + req.originalUrl;
+};
+
 obj.makeDownloadUrl = function (req, hashcode) {
     return req.protocol + '://' + req.get('host') + config.route.download + hashcode;
 };
@@ -83,27 +87,29 @@ obj.composeDownloadHtmlHeaders = function (fileInfo) {
     }
 };
 
-// fetch the resources files
-obj.getResources = function (path) {
-    return function (req, res) {
-        var options = {
-            root: "./resources/" + path,
-            dotfiles: "deny",
-            headers: {
-                "x-timestamp": Date.now(),
-                "x-sent": true
-            }
-        };
-        var filename = req.params.name;
-        res.sendFile(filename, options, function (err) {
-            if (err) {
-                logger.error(err);
-                res.status(err.status).end();
-            } else {
-                logger.trace("Sent:" + filename);
-            }
-        });
-    };
+// map the absolute path of resource files
+obj.getResourcePath = function (filepath) {
+    var path = require('path');
+    var ext = path.extname(filepath).toLowerCase();
+    var dir = '/';
+    switch (ext) {
+        case '.css':
+            dir = '/css';
+            break;
+        case '.png':
+        case '.jpg':
+        case '.gif':
+            dir = '/images';
+            break;
+        case '.js':
+            dir = '/scripts';
+            break;
+        default:
+            dir = '/others';
+            break;
+    }
+
+    return path.join(__dirname, '..', config.route.resources, dir, filepath);
 };
 
 obj.getUrlText = function (url, date) {

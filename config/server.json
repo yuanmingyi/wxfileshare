@@ -9,8 +9,7 @@
         "download": "/download/",
         "resources": "/resources/",
         "show": "/show/",
-        "updateSign": "/updateConfig",
-        "debug": "/__debug"
+        "updateSign": "/updateConfig"
     },
     "testUserId": "@diandian"
 }

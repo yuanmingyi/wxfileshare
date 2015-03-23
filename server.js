@@ -39,11 +39,24 @@ app.route(config.route.wx)
 .get(wxInterface.httpGetHandler)
 .post(wxInterface.httpPostHandler);
 
-app.get(config.route.resources + "qrcode/:name", utilities.getResources('qrcode/'));
-app.get(config.route.resources + ":name", utilities.getResources(''));
+// for wechat api configuration
+app.get(config.route.resources + "wxApiConfig.js", function (req, res) {
+    var path = utilities.getResourcePath("wxApiConfig.js");
+    var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, utilities.getFullUrl(req));
+    wxConfig.updateSignUrl = config.route.updateSign;
+    wxConfig.shareLink = config.route.upload;
+    wxConfig.shareImageLink = config.route.resources + 'upload-icon.png';    
+    var src = fs.readFileSync(path, 'utf8');
+    var ret = ejs.compile(src)({ wxConfig: wxConfig, strings: Strings });
 
-app.route(config.route.debug + ':path', function (req, res) {
-    res.redirect(config.route.root + req.params.path);
+    res.send(ret);
+});
+
+// loading resources (css, images, js)
+app.get(config.route.resources + ":name", function (req, res) {
+    var resourcePath = utilities.getResourcePath(req.params.name);
+    logger.info(util.format('resource path: %s', resourcePath));
+    res.sendFile(resourcePath);
 });
 
 // upload file page
@@ -171,7 +184,7 @@ app.post(config.route.updateSign, function (req, res) {
 
 var renderUploadPage = function (req, res, userid) {
     var userAgent = utilities.parseUserAgent(req);
-    if (userAgent.isMobile) {
+    if (userAgent.isMobile || req.query.testMobile) {
         renderUploadEjs(res, userAgent, userid, []);
     } else {
         res.render("upload", { maxFileSize: maxFileSize, userId: userid });
@@ -180,12 +193,11 @@ var renderUploadPage = function (req, res, userid) {
 
 var renderUploadEjs = function (res, userAgent, userid, fileList) {
     userid = wxInterface.verifyUserId(userid);
-    var src = fs.readFileSync('./views/upload.ejs', 'utf8');
-    var ret = ejs.compile(src)({ userAgent: userAgent, strings: Strings, updateSignUrl: config.route.updateSign, maxFileSize: maxFileSize, userId: userid, fileList: fileList });
+    var src = fs.readFileSync(__dirname + '/views/upload.ejs', 'utf8');
+    var ret = ejs.compile(src)({ userAgent: userAgent, strings: Strings, maxFileSize: maxFileSize, userId: userid, fileList: fileList });
 
     res.send(ret);
 }
-
 
 app.listen(port);
 logger.info('Express started on port ' + port);

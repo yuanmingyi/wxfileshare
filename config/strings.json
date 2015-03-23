@@ -19,5 +19,8 @@
 
     "UiCloseButton": "关闭",
     "UiShareTitle": "文件共享助手，用微信传文件",
-    "UiShareDescription": "简单几步，将您的手机/电脑上的文件发送给微信好友"
+    "UiShareDescription": "简单几步，将您的手机/电脑上的文件发送给微信好友",
+    "UiShareSuccessPrompt": "已成功分享",
+    "UiShareCancelPrompt": "已取消分享",
+    "UiShareFailPrompt": "分享失败"
 }
