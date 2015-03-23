@@ -73,9 +73,10 @@ function setIntervalChangedText(textControl, textPrefix) {
 */
 function addFileUploaded(container, obj) {
     var div = addElement('div');
+    var url = obj.url.slice(0, obj.url.indexOf(' '));
     div.appendChild(addElement('span', '上传文件(24小时有效)：'));
-    div.appendChild(addElement('span', '<a target="_blank" href="' + obj.url + '">' + limitName(obj.filename) + '</a>'));
-    div.appendChild(addElement('span', '&nbsp<a href="javascript:showQr(\'' + obj.url + '\')">查看二维码</a>'));
+    div.appendChild(addElement('span', '<a target="_blank" href="' + url + '">' + limitName(obj.filename) + '</a>'));
+    div.appendChild(addElement('span', '&nbsp<a href="javascript:showQr(\'' + url + '\')">查看二维码</a>'));
 
     if (container.firstElementChild) {
         container.insertBefore(div, container.firstElementChild);

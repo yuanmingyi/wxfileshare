@@ -21,7 +21,7 @@ html(lang="en")
                             span=index+1
                         td
                             span
-                                a(href= val.url)= val.fileName
+                                a(href= val.url.slice(0, val.url.indexOf(' ')))= val.fileName
                         td
                             span=val.createDate.toISOString()
                             

@@ -147,7 +147,7 @@ var sharingFiles = (function () {
 
         tableSvc.retrieveEntity(tableInfo.tableName, tableInfo.generatePartitionKey(hashcode), hashcode, { timeoutIntervalInMs: timeout }, function (err, entity) {
             if (err) {
-                logger.error(util.format('retrieve entity by hashcode %s failed!:\n%s', hashcode, util.inspect(error)));
+                logger.error(util.format('retrieve entity by hashcode %s failed!:\n%s', hashcode, util.inspect(err)));
                 complete(false);
                 return;
             }
