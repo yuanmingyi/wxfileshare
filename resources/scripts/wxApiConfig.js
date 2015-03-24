@@ -31,7 +31,7 @@ wx.error(function () {
         if (xhr.readyState === 4) {
             var wxConfig = JSON.parse(xhr.responseText);
             wx.config({
-                debug: <%= debug %>,
+                debug: debugWx,
                 appId: wxConfig.appId,
                 timestamp: wxConfig.timestamp,
                 nonceStr: wxConfig.nonceStr,

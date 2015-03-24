@@ -282,6 +282,7 @@ var wxInterface = (function () {
                 }
             }
             string = string.substr(1);
+            logger.trace(util.format('sign string: %s', string));
             return string;
         };
 
@@ -290,14 +291,13 @@ var wxInterface = (function () {
                 jsapi_ticket: jsapi_ticket,
                 nonceStr: createNonceStr(),
                 timestamp: createTimestamp(),
-                url: url,
-                appId: config.appId
+                url: url
             };
             var string = raw(ret);
-            jsSHA = require('jssha');
-            shaObj = new jsSHA(string, 'TEXT');
-            ret.signature = shaObj.getHash('SHA-1', 'HEX');
-
+            var shasum = crypto.createHash('sha1');
+            shasum.update(string);
+            ret.signature = shasum.digest('hex');
+            ret.appId = config.appId;
             logger.trace(util.inspect(ret));
             return ret;
         };

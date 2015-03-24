@@ -51,8 +51,15 @@
                 'onMenuShareQQ',
                 'onMenuShareWeibo'
             ];
+            var debugWx = false;
+            var params = location.search.slice(1).split('&');
+            params.forEach(function (param) {
+                if (param.split('=')[0].toLowerCase() === 'debug') {
+                    debugWx = true;
+                }
+            });
             wx.config({
-                debug: <%= debug %>,
+                debug: debugWx,
                 appId: '<%= wxConfig.appId %>',
                 timestamp: '<%= wxConfig.timestamp %>',
                 nonceStr: '<%= wxConfig.nonceStr %>',

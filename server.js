@@ -48,7 +48,7 @@ app.get(config.route.resources + "wxApiConfig.js", function (req, res) {
         shareImageLink: config.route.resources + 'upload-icon.png',
     };
     var src = fs.readFileSync(path, 'utf8');
-    var ret = ejs.compile(src)({ debug: !!process.env.__DEBUG, wxConfig: wxConfig, strings: Strings });
+    var ret = ejs.compile(src)({ wxConfig: wxConfig, strings: Strings });
 
     res.send(ret);
 });
@@ -197,7 +197,7 @@ var renderUploadPage = function (req, res, userid) {
 var renderUploadEjs = function (res, wxConfig, userAgent, userid, fileList) {
     userid = wxInterface.verifyUserId(userid);
     var src = fs.readFileSync(__dirname + '/views/upload.ejs', 'utf8');
-    var ret = ejs.compile(src)({ debug: !!process.env.__DEBUG, userAgent: userAgent, wxConfig: wxConfig, strings: Strings, maxFileSize: maxFileSize, userId: userid, fileList: fileList });
+    var ret = ejs.compile(src)({ userAgent: userAgent, wxConfig: wxConfig, strings: Strings, maxFileSize: maxFileSize, userId: userid, fileList: fileList });
 
     res.send(ret);
 }
