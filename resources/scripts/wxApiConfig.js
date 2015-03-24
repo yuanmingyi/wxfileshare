@@ -16,6 +16,30 @@ wx.config({
 });
 
 wx.ready(function () {
+    var shareObj = {
+        title: '<%= strings.UiShareTitle %>',
+        desc: '<%= strings.UiShareDescription %>',
+        link: '<%= wxConfig.shareLink %>',
+        imgUrl: '<%= wxConfig.shareImageLink %>',
+        trigger: function (res) {
+            alertBox('start sharing...');
+        },
+        success: function (res) {
+            alertBox('<%= strings.UiShareSuccessPrompt %>');
+        },
+        cancel: function (res) {
+            alertBox('<%= strings.UiShareCancelPrompt %>');
+        },
+        fail: function (res) {
+            alertBox('<%= strings.UiShareFailPrompt %>');
+            console.log(JSON.stringify(res));
+        }
+    };
+
+    wx.onMenuShareAppMessage(shareObj);
+    wx.onMenuShareTimeline(shareObj);
+    wx.onMenuShareWeibo(shareObj);
+    wx.onMenuShareQQ(shareObj);
 });
 
 wx.error(function () {
@@ -36,27 +60,3 @@ wx.error(function () {
     xhr.open("POST", "<%= wxConfig.updateSignUrl %>", true);
     xhr.send(location.href.split('#')[0]);
 });
-
-var shareObj = {
-    title: '<%= strings.UiShareTitle %>',
-    desc: '<%= strings.UiShareDescription %>',
-    link: '<%= wxConfig.shareLink %>',
-    imgUrl: '<%= wxConfig.shareImageLink %>',
-    trigger: function (res) {
-    },
-    success: function (res) {
-        alertBox('<%= strings.UiShareSuccessPrompt %>');
-    },
-    cancel: function (res) {
-        alertBox('<%= strings.UiShareCancelPrompt %>');
-    },
-    fail: function (res) {
-        alertBox('<%= strings.UiShareFailPrompt %>');
-        console.log(JSON.stringify(res));
-    }
-};
-
-wx.onMenuShareAppMessage(shareObj);
-wx.onMenuShareTimeline(shareObj);
-wx.onMenuShareWeibo(shareObj);
-wx.onMenuShareQQ(shareObj);
