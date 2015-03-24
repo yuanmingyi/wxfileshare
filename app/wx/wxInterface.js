@@ -277,7 +277,9 @@ var wxInterface = (function () {
 
             var string = '';
             for (var k in newArgs) {
-                string += '&' + k + '=' + newArgs[k];
+                if (newArgs.hasOwnProperty(k)) {
+                    string += '&' + k + '=' + newArgs[k];
+                }
             }
             string = string.substr(1);
             return string;
@@ -292,13 +294,11 @@ var wxInterface = (function () {
                 appId: config.appId
             };
             var string = raw(ret);
-            //jsSHA = require('jssha');
-            //shaObj = new jsSHA(string, 'TEXT');
-            //ret.signature = shaObj.getHash('SHA-1', 'HEX');
-            var shasum = crypto.createHash('sha1');
-            shasum.update(string);
-            ret.signature = shasum.digest('hex');
+            jsSHA = require('jssha');
+            shaObj = new jsSHA(string, 'TEXT');
+            ret.signature = shaObj.getHash('SHA-1', 'HEX');
 
+            logger.trace(util.inspect(ret));
             return ret;
         };
     })();

@@ -42,13 +42,13 @@ app.route(config.route.wx)
 // for wechat api configuration
 app.get(config.route.resources + "wxApiConfig.js", function (req, res) {
     var path = utilities.getResourcePath("wxApiConfig.js");
-    var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, utilities.getFullUrl(req));
-    wxConfig.updateSignUrl = config.route.updateSign;
-    wxConfig.shareLink = config.route.upload;
-    wxConfig.shareImageLink = config.route.resources + 'upload-icon.png';
-    wxConfig.debug = !!process.env.__DEBUG;
+    var wxConfig = {
+        updateSignUrl: config.route.updateSign,
+        shareLink: config.route.upload,
+        shareImageLink: config.route.resources + 'upload-icon.png',
+    };
     var src = fs.readFileSync(path, 'utf8');
-    var ret = ejs.compile(src)({ wxConfig: wxConfig, strings: Strings });
+    var ret = ejs.compile(src)({ debug: !!process.env.__DEBUG, wxConfig: wxConfig, strings: Strings });
 
     res.send(ret);
 });
@@ -143,8 +143,9 @@ app.get(config.route.show + ':code', function (req, res) {
         });
 
         var userAgent = utilities.parseUserAgent(req);
+        var wxConfig = utilities.getFullUrl(req).split('#')[0];
         if (userAgent.isMobile || req.query.testmobile) {
-            renderUploadEjs(res, userAgent, userid, fileList);
+            renderUploadEjs(res, wxConfig, userAgent, userid, fileList);
         } else {
             res.render("showupload", { fileList: fileList });
         }
@@ -178,7 +179,7 @@ app.post(config.route.updateSign, function (req, res) {
         url += chunk;
     });
     req.on('end', function () {
-        var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, url);
+        var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, url.split('#')[0]);
         res.send(JSON.stringify(wxConfig));
     })
 });
@@ -186,16 +187,17 @@ app.post(config.route.updateSign, function (req, res) {
 var renderUploadPage = function (req, res, userid) {
     var userAgent = utilities.parseUserAgent(req);
     if (userAgent.isMobile || req.query.testmobile) {
-        renderUploadEjs(res, userAgent, userid, []);
+        var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, utilities.getFullUrl(req).split('#')[0]);
+        renderUploadEjs(res, wxConfig, userAgent, userid, []);
     } else {
         res.render("upload", { maxFileSize: maxFileSize, userId: userid });
     }
 }
 
-var renderUploadEjs = function (res, userAgent, userid, fileList) {
+var renderUploadEjs = function (res, wxConfig, userAgent, userid, fileList) {
     userid = wxInterface.verifyUserId(userid);
     var src = fs.readFileSync(__dirname + '/views/upload.ejs', 'utf8');
-    var ret = ejs.compile(src)({ userAgent: userAgent, strings: Strings, maxFileSize: maxFileSize, userId: userid, fileList: fileList });
+    var ret = ejs.compile(src)({ debug: !!process.env.__DEBUG, userAgent: userAgent, wxConfig: wxConfig, strings: Strings, maxFileSize: maxFileSize, userId: userid, fileList: fileList });
 
     res.send(ret);
 }

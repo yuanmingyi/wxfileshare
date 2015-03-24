@@ -1,20 +1,3 @@
-var jsApiList = [
-    'closeWindow',
-    'onMenuShareAppMessage',
-    'onMenuShareTimeline',
-    'onMenuShareQQ',
-    'onMenuShareWeibo'
-];
-
-wx.config({
-    debug: <%= wxConfig.debug %>,
-    appId: '<%= wxConfig.appId %>',
-    timestamp: <%= wxConfig.timestamp %>,
-    nonceStr: '<%= wxConfig.nonceStr %>',
-    signature: '<%= wxConfig.signature %>',
-    jsApiList: jsApiList
-});
-
 wx.ready(function () {
     var shareObj = {
         title: '<%= strings.UiShareTitle %>',
@@ -48,7 +31,7 @@ wx.error(function () {
         if (xhr.readyState === 4) {
             var wxConfig = JSON.parse(xhr.responseText);
             wx.config({
-                debug: <%= wxConfig.debug %>,
+                debug: <%= debug %>,
                 appId: wxConfig.appId,
                 timestamp: wxConfig.timestamp,
                 nonceStr: wxConfig.nonceStr,
@@ -58,5 +41,5 @@ wx.error(function () {
         }
     };
     xhr.open("POST", "<%= wxConfig.updateSignUrl %>", true);
-    xhr.send(location.href.split('#')[0]);
+    xhr.send(location.href);
 });
