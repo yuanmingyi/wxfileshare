@@ -11,45 +11,6 @@ wx.ready(function () {
             alertBox(JSON.stringify(res));
         }
     });
-
-    wx.onMenuShareAppMessage({
-        title: '<%= strings.UiShareTitle %>',
-        desc: '<%= strings.UiShareDescription %>',
-        link: '<%= wxConfig.shareLink %>',
-        imgUrl: '<%= wxConfig.shareImageLink %>',
-        trigger: function (res) {
-            alert('start sharing...');
-        },
-        success: function (res) {
-            alert('<%= strings.UiShareSuccessPrompt %>');
-        },
-        cancel: function (res) {
-            alert('<%= strings.UiShareCancelPrompt %>');
-        },
-        fail: function (res) {
-            alert('<%= strings.UiShareFailPrompt %>');
-        }
-    });
-
-    wx.onMenuShareTimeline({
-        title: "title hello world",
-        link: "http://wxfileshare.azurewebsites.net",
-        imgUrl: "http://wxfileshare.azurewebsites.net/resources/upload-icon.png",
-        trigger: function (res) {
-            alertBox("start sharing...");
-        },
-        success: function (res) {
-            alertBox("successful");
-        },
-        cancel: function (res) {
-            alertBox("cancel");
-        },
-        fail: function (res) {
-            alertBox("fail");
-        }
-    });
-    //wx.onMenuShareWeibo(shareObj);
-    //wx.onMenuShareQQ(shareObj);
 });
 
 wx.error(function () {
@@ -102,7 +63,80 @@ wx.error(function () {
             });
         }
     };
-    //xhr.open("POST", "<%= wxConfig.updateSignUrl %>", true);
-    xhr.open("POST", "http://wxfileshare.azurewebsites.net/updateConfig", true);
+    xhr.open("POST", "<%= wxConfig.updateSignUrl %>", true);
     xhr.send(location.href);
+});
+
+window.addEventListener('load', function () {
+    wx.onMenuShareAppMessage({
+        title: '<%= strings.UiShareTitle %>',
+        desc: '<%= strings.UiShareDescription %>',
+        link: '<%= wxConfig.shareLink %>',
+        imgUrl: '<%= wxConfig.shareImageLink %>',
+        trigger: function (res) {
+            alert('start sharing...');
+        },
+        success: function (res) {
+            alert('<%= strings.UiShareSuccessPrompt %>');
+        },
+        cancel: function (res) {
+            alert('<%= strings.UiShareCancelPrompt %>');
+        },
+        fail: function (res) {
+            alert('<%= strings.UiShareFailPrompt %>');
+        }
+    });
+
+    wx.onMenuShareTimeline({
+        title: '<%= strings.UiShareTitle %>',
+        link: '<%= wxConfig.shareLink %>',
+        imgUrl: '<%= wxConfig.shareImageLink %>',
+        trigger: function (res) {
+            alert('start sharing...');
+        },
+        success: function (res) {
+            alert('<%= strings.UiShareSuccessPrompt %>');
+        },
+        cancel: function (res) {
+            alert('<%= strings.UiShareCancelPrompt %>');
+        },
+        fail: function (res) {
+            alert('<%= strings.UiShareFailPrompt %>');
+        }
+    });
+
+    wx.onMenuShareWeibo({
+        title: '<%= strings.UiShareTitle %>',
+        desc: '<%= strings.UiShareDescription %>',
+        link: '<%= wxConfig.shareLink %>',
+        imgUrl: '<%= wxConfig.shareImageLink %>',
+        trigger: function (res) {
+            alert('start sharing...');
+        },
+        success: function (res) {
+            alert('<%= strings.UiShareSuccessPrompt %>');
+        },
+        cancel: function (res) {
+            alert('<%= strings.UiShareCancelPrompt %>');
+        },
+        fail: function (res) {
+            alert('<%= strings.UiShareFailPrompt %>');
+        }
+    });
+
+    wx.onMenuShareQQ({
+        title: '<%= strings.UiShareTitle %>',
+        desc: '<%= strings.UiShareDescription %>',
+        link: '<%= wxConfig.shareLink %>',
+        imgUrl: '<%= wxConfig.shareImageLink %>',
+        success: function (res) {
+            alert('<%= strings.UiShareSuccessPrompt %>');
+        },
+        cancel: function (res) {
+            alert('<%= strings.UiShareCancelPrompt %>');
+        },
+        fail: function (res) {
+            alert('<%= strings.UiShareFailPrompt %>');
+        }
+    });
 });

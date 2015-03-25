@@ -43,9 +43,9 @@ app.route(config.route.wx)
 app.get(config.route.resources + "wxApiConfig.js", function (req, res) {
     var path = utilities.getResourcePath("wxApiConfig.js");
     var wxConfig = {
-        updateSignUrl: config.route.updateSign,
-        shareLink: config.route.upload,
-        shareImageLink: config.route.resources + 'upload-icon.png',
+        updateSignUrl: utilities.getRootUrl(req) + config.route.updateSign,
+        shareLink: utilities.getRootUrl(req) + config.route.upload,
+        shareImageLink: utilities.getRootUrl(req) + config.route.resources + 'upload-icon.png'
     };
     var src = fs.readFileSync(path, 'utf8');
     var ret = ejs.compile(src)({ wxConfig: wxConfig, strings: Strings });
@@ -143,7 +143,7 @@ app.get(config.route.show + ':code', function (req, res) {
         });
 
         var userAgent = utilities.parseUserAgent(req);
-        var wxConfig = utilities.getFullUrl(req).split('#')[0];
+        var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, utilities.getFullUrl(req).split('#')[0]);
         if (userAgent.isMobile || req.query.testmobile) {
             renderUploadEjs(res, wxConfig, userAgent, userid, fileList);
         } else {

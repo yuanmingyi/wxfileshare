@@ -274,7 +274,7 @@
     /*
     * initialize the DOM objects
     */
-    window.onload = function () {
+    window.addEventListener('load', function () {
         var maxFileSize = parseInt(document.getElementById("maxFileSize").textContent);
         var form = document.getElementById("form0");
         var uploader = document.getElementById("uploader");
@@ -319,7 +319,7 @@
                 form.reset();
             }
         };
-    };
+    });
 
     /*
     * handler for clicking upload button

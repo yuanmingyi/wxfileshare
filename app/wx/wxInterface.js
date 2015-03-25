@@ -139,6 +139,7 @@ var wxInterface = (function () {
 
     // update the sdk ticket
     var updateAccessToken = function () {
+        logger.trace('start to update access token...');
         var urlInfo = url.parse(requestAccessTokenUrl());
         var options = {
             hostname: urlInfo.hostname,
@@ -166,6 +167,8 @@ var wxInterface = (function () {
     };
 
     var updateApiTicket = function () {
+        logger.trace('start to update api ticket...');
+        
         if (interface.accessToken === '') {
             return;
         }
@@ -277,12 +280,9 @@ var wxInterface = (function () {
 
             var string = '';
             for (var k in newArgs) {
-                if (newArgs.hasOwnProperty(k)) {
-                    string += '&' + k + '=' + newArgs[k];
-                }
+                string += '&' + k + '=' + newArgs[k];
             }
             string = string.substr(1);
-            logger.trace(util.format('sign string: %s', string));
             return string;
         };
 
@@ -291,14 +291,17 @@ var wxInterface = (function () {
                 jsapi_ticket: jsapi_ticket,
                 nonceStr: createNonceStr(),
                 timestamp: createTimestamp(),
-                url: url
+                url: url,
+                appId: config.appId
             };
             var string = raw(ret);
+            //jsSHA = require('jssha');
+            //shaObj = new jsSHA(string, 'TEXT');
+            //ret.signature = shaObj.getHash('SHA-1', 'HEX');
             var shasum = crypto.createHash('sha1');
             shasum.update(string);
             ret.signature = shasum.digest('hex');
-            ret.appId = config.appId;
-            logger.trace(util.inspect(ret));
+
             return ret;
         };
     })();

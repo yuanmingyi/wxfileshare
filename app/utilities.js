@@ -10,6 +10,10 @@ obj.getFullUrl = function (req) {
     return req.protocol + '://' + req.get('host') + req.originalUrl;
 };
 
+obj.getRootUrl = function (req) {
+    return req.protocol + '://' + req.get('host');
+};
+
 obj.makeDownloadUrl = function (req, hashcode) {
     return req.protocol + '://' + req.get('host') + config.route.download + hashcode;
 };
