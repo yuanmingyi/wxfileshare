@@ -22,16 +22,17 @@ wx.error(function () {
             });
         }
     };
-    xhr.open("POST", "<%= wxConfig.updateSignUrl %>", true);
+    //xhr.open("POST", "<%= wxConfig.updateSignUrl %>", true);
+    xhr.open("POST", "http://wxfileshare.azurewebsites.net/updateConfig", true);
     xhr.send(location.href);
 });
 
 window.onload = function () {
     var shareObj = {
-        title: '<%= strings.UiShareTitle %>',
-        desc: '<%= strings.UiShareDescription %>',
-        link: '<%= wxConfig.shareLink %>',
-        imgUrl: '<%= wxConfig.shareImageLink %>',
+        title: 'test', //'<%= strings.UiShareTitle %>',
+        desc: 'test', //'<%= strings.UiShareDescription %>',
+        link: 'http://wxfileshare.azurewebsites.net', //'<%= wxConfig.shareLink %>',
+        imgUrl: 'http://wxfileshare.azurewebsites.net/resources/upload-icon.png', //'<%= wxConfig.shareImageLink %>',
         trigger: function (res) {
             alertBox('start sharing...');
         },
