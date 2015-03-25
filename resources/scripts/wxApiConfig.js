@@ -1,4 +1,32 @@
 wx.ready(function () {
+    wx.checkJsApi({
+      jsApiList: jsApiList,
+      success: function (res) {
+        alertBox(JSON.stringify(res));
+      }
+    });
+});
+
+wx.error(function () {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            var wxConfig = JSON.parse(xhr.responseText);
+            wx.config({
+                debug: debugWx,
+                appId: wxConfig.appId,
+                timestamp: wxConfig.timestamp,
+                nonceStr: wxConfig.nonceStr,
+                signature: wxConfig.signature,
+                jsApiList: jsApiList
+            });
+        }
+    };
+    xhr.open("POST", "<%= wxConfig.updateSignUrl %>", true);
+    xhr.send(location.href);
+});
+
+window.onload = function () {
     var shareObj = {
         title: '<%= strings.UiShareTitle %>',
         desc: '<%= strings.UiShareDescription %>',
@@ -23,23 +51,4 @@ wx.ready(function () {
     wx.onMenuShareTimeline(shareObj);
     wx.onMenuShareWeibo(shareObj);
     wx.onMenuShareQQ(shareObj);
-});
-
-wx.error(function () {
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            var wxConfig = JSON.parse(xhr.responseText);
-            wx.config({
-                debug: debugWx,
-                appId: wxConfig.appId,
-                timestamp: wxConfig.timestamp,
-                nonceStr: wxConfig.nonceStr,
-                signature: wxConfig.signature,
-                jsApiList: jsApiList
-            });
-        }
-    };
-    xhr.open("POST", "<%= wxConfig.updateSignUrl %>", true);
-    xhr.send(location.href);
-});
+};
