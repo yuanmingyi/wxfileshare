@@ -13,41 +13,39 @@ wx.ready(function () {
     });
 
     wx.onMenuShareAppMessage({
-        title: 'test', //'<%= strings.UiShareTitle %>',
-        desc: 'test', //'<%= strings.UiShareDescription %>',
-        link: 'http://wxfileshare.azurewebsites.net', //'<%= wxConfig.shareLink %>',
-        imgUrl: 'http://wxfileshare.azurewebsites.net/resources/upload-icon.png', //'<%= wxConfig.shareImageLink %>',
+        title: '<%= strings.UiShareTitle %>',
+        desc: '<%= strings.UiShareDescription %>',
+        link: '<%= wxConfig.shareLink %>',
+        imgUrl: '<%= wxConfig.shareImageLink %>',
         trigger: function (res) {
-            alertBox('start sharing...');
+            alert('start sharing...');
         },
         success: function (res) {
-            alertBox('<%= strings.UiShareSuccessPrompt %>');
+            alert('<%= strings.UiShareSuccessPrompt %>');
         },
         cancel: function (res) {
-            alertBox('<%= strings.UiShareCancelPrompt %>');
+            alert('<%= strings.UiShareCancelPrompt %>');
         },
         fail: function (res) {
-            alertBox('<%= strings.UiShareFailPrompt %>');
-            console.log(JSON.stringify(res));
+            alert('<%= strings.UiShareFailPrompt %>');
         }
     });
 
     wx.onMenuShareTimeline({
         title: "title hello world",
-        desc: 'this is for testing',
-        link: 'http://wxfileshare.azurewebsites.net',
-        imgUrl: 'http://wxfileshare.azurewebsites.net/resources/upload-icon.png',
+        link: "http://wxfileshare.azurewebsites.net",
+        imgUrl: "http://wxfileshare.azurewebsites.net/resources/upload-icon.png",
         trigger: function (res) {
-            alertBox('start sharing...');
+            alertBox("start sharing...");
         },
         success: function (res) {
-            alertBox('successful');
+            alertBox("successful");
         },
         cancel: function (res) {
-            alertBox('cancel');
+            alertBox("cancel");
         },
         fail: function (res) {
-            alertBox('fail');
+            alertBox("fail");
         }
     });
     //wx.onMenuShareWeibo(shareObj);
