@@ -31,7 +31,25 @@ wx.ready(function () {
             console.log(JSON.stringify(res));
         }
     });
-    //wx.onMenuShareTimeline(shareObj);
+
+    wx.onMenuShareTimeline({
+        title: "title hello world",
+        desc: 'this is for testing',
+        link: 'http://wxfileshare.azurewebsites.net',
+        imgUrl: 'http://wxfileshare.azurewebsites.net/resources/upload-icon.png',
+        trigger: function (res) {
+            alertBox('start sharing...');
+        },
+        success: function (res) {
+            alertBox('successful');
+        },
+        cancel: function (res) {
+            alertBox('cancel');
+        },
+        fail: function (res) {
+            alertBox('fail');
+        }
+    });
     //wx.onMenuShareWeibo(shareObj);
     //wx.onMenuShareQQ(shareObj);
 });
