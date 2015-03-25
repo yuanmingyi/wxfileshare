@@ -12,7 +12,7 @@ wx.ready(function () {
         }
     });
 
-    var shareObj = {
+    wx.onMenuShareAppMessage({
         title: 'test', //'<%= strings.UiShareTitle %>',
         desc: 'test', //'<%= strings.UiShareDescription %>',
         link: 'http://wxfileshare.azurewebsites.net', //'<%= wxConfig.shareLink %>',
@@ -30,12 +30,10 @@ wx.ready(function () {
             alertBox('<%= strings.UiShareFailPrompt %>');
             console.log(JSON.stringify(res));
         }
-    };
-
-    wx.onMenuShareAppMessage(shareObj);
-    wx.onMenuShareTimeline(shareObj);
-    wx.onMenuShareWeibo(shareObj);
-    wx.onMenuShareQQ(shareObj);
+    });
+    //wx.onMenuShareTimeline(shareObj);
+    //wx.onMenuShareWeibo(shareObj);
+    //wx.onMenuShareQQ(shareObj);
 });
 
 wx.error(function () {
