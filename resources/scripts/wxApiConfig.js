@@ -13,7 +13,8 @@ wx.ready(function () {
     });
 });
 
-wx.error(function () {
+wx.error(function (err) {
+    alert(JSON.stringify(err));
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
@@ -63,8 +64,8 @@ wx.error(function () {
             });
         }
     };
-    xhr.open("POST", "<%= wxConfig.updateSignUrl %>", true);
-    xhr.send(location.href);
+    //xhr.open("POST", "<%= wxConfig.updateSignUrl %>", true);
+    //xhr.send(location.href);
 });
 
 window.addEventListener('load', function () {

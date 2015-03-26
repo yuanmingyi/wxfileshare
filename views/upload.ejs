@@ -13,6 +13,7 @@
         <title><%= strings.AppName %></title>
     </head>
     <body>
+        <div style="font-size: small"><span><%= wxConfig.signature %></span></div>
         <div id="uploadList">
             <ul class="collapse-set">
                 <% for (var i = 0; i < fileList.length; i++) { %>
@@ -93,7 +94,7 @@
                     'chooseCard',
                     'openCard'
                 ]
-            });
+            });   
         </script>
         <script type="text/javascript" src="../resources/wxApiConfig.js"></script>
     </body>

@@ -168,7 +168,7 @@ var wxInterface = (function () {
 
     var updateApiTicket = function () {
         logger.trace('start to update api ticket...');
-        
+
         if (interface.accessToken === '') {
             return;
         }
@@ -291,8 +291,7 @@ var wxInterface = (function () {
                 jsapi_ticket: jsapi_ticket,
                 nonceStr: createNonceStr(),
                 timestamp: createTimestamp(),
-                url: url,
-                appId: config.appId
+                url: url
             };
             var string = raw(ret);
             //jsSHA = require('jssha');
@@ -302,6 +301,7 @@ var wxInterface = (function () {
             shasum.update(string);
             ret.signature = shasum.digest('hex');
 
+            ret.appId = config.appId;
             return ret;
         };
     })();
