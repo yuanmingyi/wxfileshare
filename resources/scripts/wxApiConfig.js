@@ -13,7 +13,8 @@ wx.ready(function () {
     });
 });
 
-wx.error(function () {
+wx.error(function (err) {
+    alert(JSON.stringify(err));
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
