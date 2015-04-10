@@ -12,10 +12,9 @@ html(lang="en")
                 var qrs = document.getElementsByClassName('smallqr');
                 for (var i = 0; i < qrs.length; i++) {
                     var qr = qrs[i];
-                    var url = qr.getAttribute('url');
-                    showQr(url, qr);
+                    showQr(qr.getAttribute('url'), qr);
                     qr.onclick = function () {
-                        showQr(url);
+                        showQr(this.getAttribute('url'));
                     };
                 }
             }
