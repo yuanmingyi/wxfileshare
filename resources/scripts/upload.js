@@ -3,7 +3,7 @@
 /*
 * initialize the DOM objects
 */
-window.onload = function () {
+var initDom = function () {
     var maxFileSize = parseInt(document.getElementById("maxFileSize").textContent);
     var form = document.getElementById("form0");
     var uploader = document.getElementById("uploader");
@@ -94,15 +94,17 @@ var showQr = (function () {
     //triggered errors will throw
     qrcodedraw.errorBehavior.length = false;
 
-    return function (url) {
-        var qrImg = document.createElement('canvas');
+    return function (url, container) {
+        var qrImg = container || document.createElement('canvas');
         qrcodedraw.draw(qrImg, url, function (error, canvas) {
             if (error) {
                 alert('生成二维码失败');
                 qrImg.style.display = 'none';
             }
         });
-        var notify = new Notify(qrImg, { width: qrImg.width, height: qrImg.height });
+        if (!container) {
+            var notify = new Notify(qrImg, { width: qrImg.width, height: qrImg.height });
+        }
     }
 })();
 

@@ -6,8 +6,10 @@ html(lang="en")
         link(type="text/css", rel="stylesheet", href="/resources/upload.css")
         title upload files
         <!--[if ie]><script type="text/javascript" src="/resources/excanvas.js"></script><![endif]-->
-        script(src="/resources/qrcode.min.js")
-        script(type='text/javascript' src="/resources/upload.js")
+        script(type="text/javascript" src="/resources/qrcode.min.js")
+        script(type="text/javascript" src="/resources/upload.js")
+        script(type="text/javascript").
+            window.onload = initDom;
     body
         #maxFileSize.hiddenDiv!= maxFileSize
         #uid.hiddenDiv!= userId

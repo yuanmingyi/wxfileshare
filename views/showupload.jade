@@ -2,10 +2,31 @@
 doctype html
 html(lang="en")
     head
-        meta(charset="utf-8") 
+        meta(charset="utf-8")
         link(type="text/css", rel="stylesheet", href="/resources/upload.css")
+        <!--[if ie]><script type="text/javascript" src="/resources/excanvas.js"></script><![endif]-->
+        script(type="text/javascript" src="/resources/qrcode.min.js")
+        script(type="text/javascript" src="/resources/upload.js")
+        script(type="text/javascript").
+            window.onload = function () {
+                var qrs = document.getElementsByClassName('smallqr');
+                for (var i = 0; i < qrs.length; i++) {
+                    var qr = qrs[i];
+                    var url = qr.getAttribute('url');
+                    showQr(url, qr);
+                    qr.onclick = function () {
+                        showQr(url);
+                    };
+                }
+            }
         title shared files
     body
+        style(type="text/css").
+            .smallqr {
+                width: 32px;
+                height: 32px;
+            }
+
         #uploadContainer
             table
                 tr
@@ -15,13 +36,19 @@ html(lang="en")
                         span 文件名
                     td
                         span 创建时间
+                    td
+                        span 二维码
                 each val, index in fileList
+                    -var url= val.url.slice(0, val.url.indexOf(' '))
                     tr
                         td
                             span=index+1
                         td
                             span
-                                a(href= val.url.slice(0, val.url.indexOf(' ')))= val.fileName
+                                a(href= url)= val.fileName
                         td
                             span=val.createDate.toISOString()
+                        td
+                            canvas(class= "smallqr", url= url)
+
                             
