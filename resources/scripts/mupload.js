@@ -136,6 +136,7 @@
             this.ci_title.getElementsByTagName('span')[0].appendChild(this.title);
             this.ci_title.attr('href', 'javascript:onclick_fileitem("' + this.id + '")');
             this.p = li.getElementsByClassName('auto-select-text')[0];
+            this.bg = li.getElementsByClassName('progressbar')[0];
             this.ci_details = li.getElementsByClassName('ci-details')[0];
 
             li.attr('id', id);
@@ -164,12 +165,9 @@
                 this.ci_title.style.opacity = percentComplete / 100;
                 // for ie
                 this.ci_title.style.filter = 'alpha(opacity=' + percentComplete + ')';
-                if (percentComplete >= 4) {
-                    this.ci_details.style.width = (percentComplete - 4) + '%';
-                }
+                this.bg.style.width = percentComplete + '%';
                 this.p.textContent = percentComplete + '%';
-            }
-            else {
+            } else {
                 this.title.nodeValue = "正在上传: " + limitName(filename);
             }
         };
@@ -231,10 +229,12 @@
         obj.addListItem = function (filename) {
             // create HTML element
             var p = document.createElement('p').class('auto-select-text');
+            var bg = document.createElement('div').class('progressbar');
             var ci_title = document.createElement('a').class('ci-title').attr('filename', filename);
             ci_title.appendChild(document.createElement('span'));
             var ci_details = document.createElement('div').class('ci-details').append(p);
-            var li = document.createElement('li').class('collapse-item-folded').append(ci_title).append(ci_details);
+            var detailContainer = document.createElement('div').append(bg).append(ci_details);
+            var li = document.createElement('li').class('collapse-item-folded').append(ci_title).append(detailContainer);
 
             return new ListItem(li);
         };

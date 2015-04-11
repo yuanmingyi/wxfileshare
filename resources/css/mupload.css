@@ -70,17 +70,30 @@ li.collapse-item-unfolded > a > span {
     background-position-y: 16px;
 }
 
-li[class^=collapse-item] > .ci-details {
+li[class^=collapse-item] > div {
+    position: relative;
+}
+
+li[class^=collapse-item] > div > .ci-details {
     margin: 0;
     padding: 2%;
     word-wrap: break-word;
     text-align: center;
-    background-color: #eeeeee;
     display: block;
 }
 
-li.collapse-item-folded > .ci-details {
+li.collapse-item-folded > div > .ci-details {
     display: none;
+}
+
+.progressbar {
+    z-index: -1;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background-color: #eeeeee;
 }
 
 #popupWindow {
@@ -96,7 +109,7 @@ li.collapse-item-folded > .ci-details {
     font-size: 150%;
     border: 5px dashed rgba(255, 255, 255, 0.5);
     background-color: rgba(225, 225, 225, 0.5);
-    z-index: 2;
+    z-index: 100;
 }
 
 #popupWindow.hidden {
