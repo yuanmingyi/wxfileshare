@@ -191,7 +191,7 @@ app.post(config.route.updateSign, function (req, res) {
 
 var renderUploadPage = function (req, res, userid) {
     var userAgent = utilities.parseUserAgent(req);
-    if (userAgent.isMobile || req.query.testmobile) {
+    if ((userAgent.isMobile && req.query.pc === undefined) || req.query.testmobile) {
         var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, utilities.getFullUrl(req).split('#')[0]);
         renderUploadEjs(res, wxConfig, userAgent, userid, []);
     } else {

@@ -6,6 +6,34 @@ body {
     clear: both;
 }
 
+#navigator {
+    font-size: small;
+    position: relative;
+    text-align: center;
+}
+
+#navigator > div > a {
+    background-color: #999999;
+    text-decoration: none;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100px;
+    height: 40px;
+    border-radius: 5px;
+    display: block;
+}
+
+#navigator > div:last-child {
+    opacity: 0.5;
+    padding: 1%;
+    margin-top: 20px;
+}
+
+#navigator > div > a > span {
+    line-height: 40px;
+    color: #fff;
+}
+
 #uploadList {
     position: fixed;
     left: 4%;

@@ -372,6 +372,13 @@
         }
     };
 
+    window.switch_to_pc = function () {
+        if (location.search === '') {
+            location.search = '?pc';
+        } else {
+            location.search += '&pc';
+        }
+    };
     //window.detectWechat = function () {
     //    return (navigator.userAgent || navigator.vendor || window.opera).indexOf('MicroMessenger') !== -1;
     //};

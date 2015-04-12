@@ -1,5 +1,5 @@
 {
-    "WxHelpDoc": "发送消息:\nu -> 上传文件\ns -> 获得文件下载链接\na -> 查看已上传的所有文件",
+    "WxHelpDoc": "发送消息:\nu -> 上传文件\ns -> 获得文件下载链接\na -> 查看已上传的所有文件\n\n或在PC上使用浏览器打开http://wjgx.net",
     "WxUploadHint": "上传链接: %s",
     "WxUploadedLinks": "最近上传文件:",
     "WxAllUploadedLinks": "所有上传文件:",
@@ -16,6 +16,8 @@
 
     "TextUrlSuffix": "(%d小时内有效)",
     "AppName": "文件共享助手",
+    "SwitchPage": "切换到PC版",
+    "TextAds": "关注微信公众号gongxiangzhushou，共享文件更方便",
 
     "UiCloseButton": "关闭",
     "UiShareTitle": "文件共享助手，用微信传文件",
