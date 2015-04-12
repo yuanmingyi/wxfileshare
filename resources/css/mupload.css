@@ -6,32 +6,29 @@ body {
     clear: both;
 }
 
-#navigator {
+#naviBar {
     font-size: small;
     position: relative;
     text-align: center;
 }
 
-#navigator > div > a {
+#naviBar > div > a {
     background-color: #999999;
     text-decoration: none;
     margin-left: auto;
     margin-right: auto;
     width: 100px;
     height: 40px;
+    line-height: 40px;
+    color: #fff;
     border-radius: 5px;
     display: block;
 }
 
-#navigator > div:last-child {
+#naviBar > div:last-child {
     opacity: 0.5;
     padding: 1%;
     margin-top: 20px;
-}
-
-#navigator > div > a > span {
-    line-height: 40px;
-    color: #fff;
 }
 
 #uploadList {
@@ -130,9 +127,9 @@ li.collapse-item-folded > div > .ci-details {
     text-align: center;
     left: 18%;
     right: 18%;
-    top: 40px;
+    top: 30px;
     bottom: 40px;
-    padding: 1%;
+    padding: 15px;
     font-family: 'Segoe UI';
     font-size: 150%;
     border: 5px dashed rgba(255, 255, 255, 0.5);
@@ -256,7 +253,7 @@ li.collapse-item-folded > div > .ci-details {
 
     #popupWindow.fixed-size {
         left: 50%;
-        margin-left: -160px;
+        margin-left: -180px;
         width: 320px;
     }
 
@@ -299,7 +296,7 @@ li.collapse-item-folded > div > .ci-details {
 
     #popupWindow.fixed-size {
         top: 50%;
-        margin-top: -160px;
+        margin-top: -180px;
         height: 320px;
     }
 }

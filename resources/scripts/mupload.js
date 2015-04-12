@@ -138,6 +138,7 @@
             this.p = li.getElementsByClassName('auto-select-text')[0];
             this.bg = li.getElementsByClassName('progressbar')[0];
             this.ci_details = li.getElementsByClassName('ci-details')[0];
+            containerDiv.style.display = 'block';
 
             li.attr('id', id);
             items[id] = this;
@@ -175,6 +176,9 @@
         ListItem.prototype.remove = function () {
             delete items[this.id];
             this.li.remove();
+            if (list.children.length === 0) {
+                containerDiv.style.display = 'none';
+            }
         };
 
         ListItem.prototype.filename = function () {
@@ -216,6 +220,7 @@
 
         obj.initialize = function (id) {
             containerDiv = document.getElementById(id);
+            containerDiv.style.display = 'none';
             list = containerDiv.getElementsByClassName('collapse-set')[0];
             for (var i = list.children.length - 1; i >= 0; i--) {
                 var li = list.children[i];
@@ -286,6 +291,12 @@
             if (uploader.value !== '' && !!uploader.files && uploader.files.length === 1) {
                 if (uploader.files[0].size > maxFileSize) {
                     alertBox("请上传小于" + maxFileSize / 1024 / 1024 + "Mb的文件");
+                    form.reset();
+                    return;
+                }
+
+                if (uploader.files[0].size === 0) {
+                    alertBox("请上传非空文件");
                     form.reset();
                     return;
                 }

@@ -17,6 +17,12 @@ var initDom = function () {
                 return;
             }
 
+            if (uploader.files[0].size === 0) {
+                alertBox("请上传非空文件");
+                form.reset();
+                return;
+            }
+
             var uploadButton = document.getElementById("uploadButton");
             var hintLabel = document.getElementById("hint");
             var uploadContainer = document.getElementById("uploadContainer");
