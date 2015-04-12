@@ -9,7 +9,8 @@
         "download": "/download/",
         "resources": "/resources/",
         "show": "/show/",
-        "updateSign": "/updateConfig"
+        "updateSign": "/updateConfig",
+        "favicon": "/favicon.ico"
     },
     "testUserId": "@diandian"
 }

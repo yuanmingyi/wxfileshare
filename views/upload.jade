@@ -2,7 +2,9 @@
 doctype html
 html(lang="en")
     head
-        meta(charset="utf-8") 
+        meta(charset="utf-8")
+        link(type="image/ico" rel="icon" href="/favicon.ico")
+        link(type="image/ico" rel="shortcut icon" href="/favicon.ico")
         link(type="text/css", rel="stylesheet", href="/resources/upload.css")
         title upload files
         <!--[if ie]><script type="text/javascript" src="/resources/excanvas.js"></script><![endif]-->
@@ -17,10 +19,12 @@ html(lang="en")
             div
                 input(name="uid", type="hidden")
             div
-                span#hint 请点击图标上传文件
-                span#loadingText
+                span#title= "文件共享助手（微信号: " + wechatId + "）"
             div
-                img(id="uploadButton", alt="click to upload a file", src="/resources/upload-icon.png", onclick="upload()")
+                img(id="uploadButton", alt="点击上传文件", src="/resources/wxid.jpg", onclick="upload()")
+            div
+                span#hint 请点击微信二维码上传文件
+                span#loadingText            
             div
                 input(name="file", id="uploader", type="file" hidden="hidden")
         #uploadContainer

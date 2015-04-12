@@ -306,6 +306,9 @@ var wxInterface = (function () {
         };
     })();
 
+    interface.getWxId = function () {
+        return config.wxid;
+    };
 
     return interface;
 })();

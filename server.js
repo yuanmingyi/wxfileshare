@@ -60,6 +60,11 @@ app.get(config.route.resources + ":name", function (req, res) {
     res.sendFile(resourcePath);
 });
 
+app.get(config.route.favicon, function (req, res) {
+    logger.info('Get favicon.ico');
+    res.sendFile(__dirname + config.route.favicon);
+});
+
 // upload file page
 app.route(config.route.upload)
 .get(function (req, res) {
@@ -147,7 +152,7 @@ app.get(config.route.show + ':code', function (req, res) {
         if (userAgent.isMobile || req.query.testmobile) {
             renderUploadEjs(res, wxConfig, userAgent, userid, fileList);
         } else {
-            res.render("showupload", { fileList: fileList });
+            res.render("showupload", { fileList: fileList, wechatId: wxInterface.getWxId() });
         }
     });
 });
@@ -190,7 +195,7 @@ var renderUploadPage = function (req, res, userid) {
         var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, utilities.getFullUrl(req).split('#')[0]);
         renderUploadEjs(res, wxConfig, userAgent, userid, []);
     } else {
-        res.render("upload", { maxFileSize: maxFileSize, userId: userid });
+        res.render("upload", { maxFileSize: maxFileSize, userId: userid, wechatId: wxInterface.getWxId() });
     }
 }
 

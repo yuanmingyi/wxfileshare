@@ -7,6 +7,8 @@ var initDom = function () {
     var maxFileSize = parseInt(document.getElementById("maxFileSize").textContent);
     var form = document.getElementById("form0");
     var uploader = document.getElementById("uploader");
+    var hintText = document.getElementById("hint").innerText;
+
     uploader.onchange = function (ev) {
         if (uploader.value !== '' && !!uploader.files && uploader.files.length === 1) {
             if (uploader.files[0].size > maxFileSize) {
@@ -26,7 +28,7 @@ var initDom = function () {
                 if (xhr.readyState == 4) {
                     uploadButton.onclick = upload;
                     clearInterval(timer);
-                    hintLabel.innerText = "请点击图标上传文件";
+                    hintLabel.innerText = hintText;
                     if (xhr.status == 200) {
                         var obj = JSON.parse(xhr.responseText);
                         addFileUploaded(uploadContainer, obj);

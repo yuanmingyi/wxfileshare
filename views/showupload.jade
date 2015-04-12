@@ -3,6 +3,8 @@ doctype html
 html(lang="en")
     head
         meta(charset="utf-8")
+        link(type="image/ico" rel="icon" href="/favicon.ico")
+        link(type="image/ico" rel="shortcut icon" href="/favicon.ico")
         link(type="text/css", rel="stylesheet", href="/resources/upload.css")
         <!--[if ie]><script type="text/javascript" src="/resources/excanvas.js"></script><![endif]-->
         script(type="text/javascript" src="/resources/qrcode.min.js")
@@ -26,6 +28,9 @@ html(lang="en")
                 height: 32px;
             }
 
+        div
+            span#title= "文件共享助手（微信号: " + wechatId + "）"
+            a(href="/") 上传文件
         #uploadContainer
             table
                 tr
