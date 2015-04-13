@@ -27,7 +27,8 @@ body {
 }
 
 #naviBar > div:last-child {
-    opacity: 0.5;
+    opacity: 0.8;
+    color: #333;
     margin-top: 15px;
 }
 
