@@ -5,6 +5,8 @@
   "appId": "wx32bb357787fcad9c",
   "appSecret": "258b0443a0213441ca9016e9157cc316",
   "wxid": "gongxiangzhushou",
+  "originalId", "gh_9b622d9e7726",
+  "contactLink": "weixin://profile/gh_9b622d9e7726",
   "showFileCount": 1,
   "ticketUpdatePeriodInMs": 10000,
   "accessTokenUpdatePeriodInMs": 10000,

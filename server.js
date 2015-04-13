@@ -202,7 +202,11 @@ var renderUploadPage = function (req, res, userid) {
 var renderUploadEjs = function (res, wxConfig, userAgent, userid, fileList) {
     userid = wxInterface.verifyUserId(userid);
     var src = fs.readFileSync(__dirname + '/views/upload.ejs', 'utf8');
-    var ret = ejs.compile(src)({ userAgent: userAgent, wxConfig: wxConfig, strings: Strings, maxFileSize: maxFileSize, userId: userid, fileList: fileList, flight: true });
+    var wechatId = wxInterface.getWxId();
+    if (userAgent.inWechat) {
+        wechatId = '<a href="' + wxInterface.getContactLink() + '">' + wechatId + '</a>';
+    }
+    var ret = ejs.compile(src)({ userAgent: userAgent, wxConfig: wxConfig, strings: Strings, maxFileSize: maxFileSize, userId: userid, fileList: fileList, wechatId: wechatId });
 
     res.send(ret);
 }

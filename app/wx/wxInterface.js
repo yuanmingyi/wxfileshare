@@ -310,6 +310,10 @@ var wxInterface = (function () {
         return config.wxid;
     };
 
+    interface.getContactLink = function () {
+        return config.contactLink;
+    };
+
     return interface;
 })();
 
