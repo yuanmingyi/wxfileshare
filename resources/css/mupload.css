@@ -17,6 +17,7 @@ body {
     text-decoration: none;
     margin-left: auto;
     margin-right: auto;
+    margin-top: 20px;
     width: 100px;
     height: 40px;
     line-height: 40px;
@@ -27,12 +28,11 @@ body {
 
 #naviBar > div:last-child {
     opacity: 0.5;
-    padding: 1%;
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 #naviBar > div:last-child > a {
-    text-decoration: underline;
+    color: #000;
 }
 
 #uploadList {
