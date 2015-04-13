@@ -12,7 +12,7 @@ body {
     text-align: center;
 }
 
-#naviBar > div > a {
+#naviBar > div:first-child > a {
     background-color: #999999;
     text-decoration: none;
     margin-left: auto;
