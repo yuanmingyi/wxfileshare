@@ -31,6 +31,10 @@ body {
     margin-top: 20px;
 }
 
+#naviBar > div:last-child > a {
+    text-decoration: underline;
+}
+
 #uploadList {
     position: fixed;
     left: 4%;
