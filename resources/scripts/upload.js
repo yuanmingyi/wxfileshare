@@ -18,7 +18,7 @@ var initDom = function () {
             }
 
             if (uploader.files[0].size === 0) {
-                alertBox("请上传非空文件");
+                alert("请上传非空文件");
                 form.reset();
                 return;
             }
