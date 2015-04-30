@@ -8,13 +8,13 @@ wx.ready(function () {
             'onMenuShareWeibo'
         ],
         success: function (res) {
-            alertBox(JSON.stringify(res));
+            //alertBox(JSON.stringify(res));
         }
     });
 });
 
 wx.error(function (err) {
-    alert(JSON.stringify(err));
+    //alert(JSON.stringify(err));
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
