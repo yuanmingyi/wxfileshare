@@ -78,13 +78,13 @@ window.addEventListener('load', function () {
             alert('start sharing...');
         },
         success: function (res) {
-            alert('<%= strings.UiShareSuccessPrompt %>');
+            alert1('<%= strings.UiShareSuccessPrompt %>');
         },
         cancel: function (res) {
-            alert('<%= strings.UiShareCancelPrompt %>');
+            alert1('<%= strings.UiShareCancelPrompt %>');
         },
         fail: function (res) {
-            alert('<%= strings.UiShareFailPrompt %>');
+            alert1('<%= strings.UiShareFailPrompt %>');
         }
     });
 
@@ -93,16 +93,16 @@ window.addEventListener('load', function () {
         link: '<%= wxConfig.shareLink %>',
         imgUrl: '<%= wxConfig.shareImageLink %>',
         trigger: function (res) {
-            alert('start sharing...');
+            alert1('start sharing...');
         },
         success: function (res) {
-            alert('<%= strings.UiShareSuccessPrompt %>');
+            alert1('<%= strings.UiShareSuccessPrompt %>');
         },
         cancel: function (res) {
-            alert('<%= strings.UiShareCancelPrompt %>');
+            alert1('<%= strings.UiShareCancelPrompt %>');
         },
         fail: function (res) {
-            alert('<%= strings.UiShareFailPrompt %>');
+            alert1('<%= strings.UiShareFailPrompt %>');
         }
     });
 
@@ -112,16 +112,16 @@ window.addEventListener('load', function () {
         link: '<%= wxConfig.shareLink %>',
         imgUrl: '<%= wxConfig.shareImageLink %>',
         trigger: function (res) {
-            alert('start sharing...');
+            alert1('start sharing...');
         },
         success: function (res) {
-            alert('<%= strings.UiShareSuccessPrompt %>');
+            alert1('<%= strings.UiShareSuccessPrompt %>');
         },
         cancel: function (res) {
-            alert('<%= strings.UiShareCancelPrompt %>');
+            alert1('<%= strings.UiShareCancelPrompt %>');
         },
         fail: function (res) {
-            alert('<%= strings.UiShareFailPrompt %>');
+            alert1('<%= strings.UiShareFailPrompt %>');
         }
     });
 
@@ -131,13 +131,17 @@ window.addEventListener('load', function () {
         link: '<%= wxConfig.shareLink %>',
         imgUrl: '<%= wxConfig.shareImageLink %>',
         success: function (res) {
-            alert('<%= strings.UiShareSuccessPrompt %>');
+            alert1('<%= strings.UiShareSuccessPrompt %>');
         },
         cancel: function (res) {
-            alert('<%= strings.UiShareCancelPrompt %>');
+            alert1('<%= strings.UiShareCancelPrompt %>');
         },
         fail: function (res) {
-            alert('<%= strings.UiShareFailPrompt %>');
+            alert1('<%= strings.UiShareFailPrompt %>');
         }
     });
+
+    var alert1 = function () {
+        alertBox.apply(null, arguments);
+    }
 });
