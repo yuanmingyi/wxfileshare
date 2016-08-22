@@ -8,7 +8,7 @@ wx.ready(function () {
             'onMenuShareWeibo'
         ],
         success: function (res) {
-            alertBox("success: " + JSON.stringify(res));
+            //alertBox("success: " + JSON.stringify(res));
         }
     });
 });
@@ -70,7 +70,7 @@ wx.error(function (err) {
 
 window.addEventListener('load', function () {
     wx.onMenuShareAppMessage({
-        title: '<%= strings.UiShareTitle %>',
+        title: 'shareApp', // '<%= strings.UiShareTitle %>',
         desc: '<%= strings.UiShareDescription %>',
         link: '<%= wxConfig.shareLink %>',
         imgUrl: '<%= wxConfig.shareImageLink %>',
@@ -89,7 +89,7 @@ window.addEventListener('load', function () {
     });
 
     wx.onMenuShareTimeline({
-        title: '<%= strings.UiShareTitle %>',
+        title: 'shareTimeLine', // '<%= strings.UiShareTitle %>',
         link: '<%= wxConfig.shareLink %>',
         imgUrl: '<%= wxConfig.shareImageLink %>',
         trigger: function (res) {
@@ -107,7 +107,7 @@ window.addEventListener('load', function () {
     });
 
     wx.onMenuShareWeibo({
-        title: '<%= strings.UiShareTitle %>',
+        title: 'shareWeibo', // '<%= strings.UiShareTitle %>',
         desc: '<%= strings.UiShareDescription %>',
         link: '<%= wxConfig.shareLink %>',
         imgUrl: '<%= wxConfig.shareImageLink %>',
@@ -126,7 +126,7 @@ window.addEventListener('load', function () {
     });
 
     wx.onMenuShareQQ({
-        title: '<%= strings.UiShareTitle %>',
+        title: 'shareQQ', // '<%= strings.UiShareTitle %>',
         desc: '<%= strings.UiShareDescription %>',
         link: '<%= wxConfig.shareLink %>',
         imgUrl: '<%= wxConfig.shareImageLink %>',
