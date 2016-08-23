@@ -76,7 +76,7 @@
             var data = {
                 title: '<%= strings.UiShareTitle %>',
                 desc: '<%= strings.UiShareDescription %>',
-                link: '<%= wxConfig.url %>',
+                link: window.location.href,
                 imgUrl: '<%= wxConfig.shareImageLink %>',
                 trigger: function (res) {
                     alert('start sharing...');
