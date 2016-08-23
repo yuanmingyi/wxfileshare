@@ -18,8 +18,7 @@
         <!--<div style="font-size: small"><span><%= wxConfig.jsapi_ticket %></span></div>-->
         <div id="naviBar">
             <div><a href="javascript:switch_to_pc()"><%= strings.SwitchPage %></a></div>
-            <div><span><%- strings.getString('TextAds', wechatId) %></span></div>
-            <div><iframe src='<%= profileLink %>'></iframe></div>
+            <div><span><%- strings.getString('TextAds', wechatId) %></span><a id="profile-link" href='<%= profileLink %>'>&rArr;</a></div>
         </div>
         <div id="uploadList">
             <ul class="collapse-set">
@@ -102,6 +101,9 @@
                     'openCard'
                 ]
             });
+            if (!InWechat) {
+                document.getElementById("profile-link").style.display="none";
+            }
         </script>
         <script type="text/javascript" src="../resources/wxApiConfig.js"></script>
     </body>
