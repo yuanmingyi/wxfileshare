@@ -6,7 +6,7 @@
   "appSecret": "258b0443a0213441ca9016e9157cc316",
   "wxid": "gongxiangzhushou",
   "originalId": "gh_9b622d9e7726",
-  "contactLink": "weixin://profile/gh_9b622d9e7726",
+  "contactLink": "https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz=MzA5NjM5MjY4OA==&scene=110#wechat_redirect", // "weixin://profile/gh_9b622d9e7726",
   "showFileCount": 1,
   "ticketUpdatePeriodInMs": 10000,
   "accessTokenUpdatePeriodInMs": 10000,

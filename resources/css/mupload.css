@@ -2,6 +2,11 @@ body {
     font-size: large;
 }
 
+iframe {
+    width: 100%;
+    height: auto;
+}
+
 .clear {
     clear: both;
 }
