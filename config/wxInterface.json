@@ -13,5 +13,5 @@
   "accessTokenUpdatePeriodInMs": 10000,
   "requestAccessTokenUrlPattern": "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s",
   "requestApiTicketUrlPattern": "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=%s&type=jsapi",
-  "shareImageLink": "http://wxfileshare.blob.core.windows.net/public/shareImage.png"
+  "shareImageLink": "http://ww4.sinaimg.cn/mw690/4e6fe405gw1f743auj7e6j208c08c0sp.jpg"
 }
