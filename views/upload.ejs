@@ -73,10 +73,10 @@
                     'closeWindow'
                 ]
             });
-            wx.wjgxShareData = {
+            var data = {
                 title: '<%= strings.UiShareTitle %>',
                 desc: '<%= strings.UiShareDescription %>',
-                link: '<%= wxConfig.shareLink %>',
+                link: '<%= wxConfig.url %>',
                 imgUrl: '<%= wxConfig.shareImageLink %>',
                 trigger: function (res) {
                     alert('start sharing...');
@@ -99,7 +99,16 @@
                 var link = document.getElementById("follow-account");
                 link.parentElement.innerHTML = link.innerHTML;
             }
+            wx.ready(function () {
+                alert(JSON.stringify(data));
+                wx.onMenuShareAppMessage(data);
+                wx.onMenuShareTimeline(data);
+                wx.onMenuShareWeibo(data);
+                wx.onMenuShareQQ(data);
+            });
+            wx.error(function (err) {
+                alert("error: " + JSON.stringify(err));
+            });
         </script>
-        <script type="text/javascript" src="../resources/wxApiConfig.js"></script>
     </body>
 </html>
