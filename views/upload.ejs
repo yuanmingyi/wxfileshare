@@ -73,6 +73,27 @@
                     'closeWindow'
                 ]
             });
+            wx.wjgxShareData = {
+                title: '<%= strings.UiShareTitle %>',
+                desc: '<%= strings.UiShareDescription %>',
+                link: '<%= wxConfig.shareLink %>',
+                imgUrl: '<%= wxConfig.shareImageLink %>',
+                trigger: function (res) {
+                    alert('start sharing...');
+                },
+                success: function (res) {
+                    alert('<%= strings.UiShareSuccessPrompt %>');
+                },
+                cancel: function (res) {
+                    alert('<%= strings.UiShareCancelPrompt %>');
+                },
+                fail: function (res) {
+                    alert('<%= strings.UiShareFailPrompt %>');
+                },
+                complete: function (res) {
+                    alert('share complete');
+                }
+            };
             if (!InWechat) {
                 // remove link to public account
                 var link = document.getElementById("follow-account");
