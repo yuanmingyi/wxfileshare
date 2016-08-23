@@ -18,7 +18,7 @@
         <!--<div style="font-size: small"><span><%= wxConfig.jsapi_ticket %></span></div>-->
         <div id="naviBar">
             <div><a href="javascript:switch_to_pc()"><%= strings.SwitchPage %></a></div>
-            <div><span id="follow-account"><%- strings.getString('TextAds', wechatId) %></span></div>
+            <div><span><a id="follow-account" href="<%= profileLink %>"><%- strings.getString('TextAds', wechatId) %></a></span></div>
         </div>
         <div id="uploadList">
             <ul class="collapse-set">
@@ -101,14 +101,10 @@
                     'openCard'
                 ]
             });
-            if (InWechat) {
-                // add link to public account
-                var e = document.getElementById("follow-account");
-                var link = document.createElement("a");
-                link.href = '<%= profileLink %>';
-                link.innerHTML = e.innerHTML;
-                e.innerHTML = "";
-                e.appendChild(link);
+            if (!InWechat) {
+                // remove link to public account
+                var link = document.getElementById("follow-account");
+                link.parentElement.innerHTML = link.innerHTML;
             }
         </script>
         <script type="text/javascript" src="../resources/wxApiConfig.js"></script>
