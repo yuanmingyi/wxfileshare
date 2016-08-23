@@ -314,6 +314,10 @@ var wxInterface = (function () {
         return config.contactLink;
     };
 
+    interface.getShareImageLink = function () {
+        return config.shareImageLink;
+    }
+
     return interface;
 })();
 

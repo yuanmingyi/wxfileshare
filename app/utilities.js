@@ -26,6 +26,10 @@ obj.makeUploadUrl = function (req, userid) {
     return req.protocol + '://' + req.get('host') + config.route.upload + userid;
 }
 
+obj.makeAnonymousUploadUrl = function(req) {
+    return req.protocol + '://' + req.get('host') + config.route.upload;
+}
+
 obj.sendSafeResponse = function (resp, code, obj) {
     if (!resp.headersSent) {
         var msg = "response error";

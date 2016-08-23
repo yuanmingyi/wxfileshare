@@ -1,5 +1,5 @@
 wx.ready(function () {
-    alert("wx ready");
+    alert(JSON.stringify(wx.wjgxShareData));
     wx.onMenuShareAppMessage(wx.wjgxShareData);
     wx.onMenuShareTimeline(wx.wjgxShareData);
     wx.onMenuShareWeibo(wx.wjgxShareData);

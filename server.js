@@ -148,8 +148,10 @@ app.get(config.route.show + ':code', function (req, res) {
         });
 
         var userAgent = utilities.parseUserAgent(req);
-        var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, utilities.getFullUrl(req).split('#')[0]);
         if (userAgent.isMobile || req.query.testmobile) {
+            var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, utilities.getFullUrl(req).split('#')[0]);
+            wxConfig.shareLink = utilities.makeAnonymousUploadUrl(req);
+            wxConfig.shareImageLink = wxInterface.getShareImageLink();
             renderUploadEjs(res, wxConfig, userAgent, userid, fileList);
         } else {
             res.render("showupload", { fileList: fileList, wechatId: wxInterface.getWxId() });
@@ -193,6 +195,8 @@ var renderUploadPage = function (req, res, userid) {
     var userAgent = utilities.parseUserAgent(req);
     if ((userAgent.isMobile && req.query.pc === undefined) || req.query.testmobile) {
         var wxConfig = wxInterface.makeSignForSdk(wxInterface.apiTicket, utilities.getFullUrl(req).split('#')[0]);
+        wxConfig.shareLink = utilities.makeAnonymousUploadUrl(req);
+        wxConfig.shareImageLink = wxInterface.getShareImageLink();
         renderUploadEjs(res, wxConfig, userAgent, userid, []);
     } else {
         res.render("upload", { maxFileSize: maxFileSize, userId: userid, wechatId: wxInterface.getWxId() });
