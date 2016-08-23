@@ -6,6 +6,7 @@
         <link type="image/ico" rel="icon" href="../favicon.ico" />
         <link type="image/ico" rel="shortcut icon" href="../favicon.ico" />
         <link type="text/css" rel="stylesheet" href="../resources/mupload.css" />
+        <script type="text/javascript" src="../resources/jquery.min.js" ></script>
         <script type="text/javascript" src="../resources/mupload.js"></script>
         <script type="text/javascript">
             var IeMobile = <%= userAgent.ieMobile %>;
@@ -51,32 +52,39 @@
         </div>
         <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
         <script type="text/javascript">
-            var debugWx = false;
-            var params = location.search.slice(1).split('&');
-            params.forEach(function (param) {
-                if (param.split('=')[0].toLowerCase() === 'debug') {
-                    debugWx = true;
+            $(function() {
+                var debugWx = false;
+                var params = location.search.slice(1).split('&');
+                params.forEach(function (param) {
+                    if (param.split('=')[0].toLowerCase() === 'debug') {
+                        debugWx = true;
+                    }
+                });
+                wx.config({
+                    debug: debugWx,
+                    appId: '<%= wxConfig.appId %>',
+                    timestamp: '<%= wxConfig.timestamp %>',
+                    nonceStr: '<%= wxConfig.nonceStr %>',
+                    signature: '<%= wxConfig.signature %>',
+                    jsApiList: [
+                        'checkJsApi',
+                        'onMenuShareTimeline',
+                        'onMenuShareAppMessage',
+                        'onMenuShareQQ',
+                        'onMenuShareWeibo',
+                        'closeWindow'
+                    ]
+                });
+                if (!InWechat) {
+                    // remove link to public account
+                    var link = document.getElementById("follow-account");
+                    link.parentElement.innerHTML = link.innerHTML;
                 }
-            });
-            wx.config({
-                debug: debugWx,
-                appId: '<%= wxConfig.appId %>',
-                timestamp: '<%= wxConfig.timestamp %>',
-                nonceStr: '<%= wxConfig.nonceStr %>',
-                signature: '<%= wxConfig.signature %>',
-                jsApiList: [
-                    'checkJsApi',
-                    'onMenuShareTimeline',
-                    'onMenuShareAppMessage',
-                    'onMenuShareQQ',
-                    'onMenuShareWeibo',
-                    'closeWindow'
-                ]
             });
             var data = {
                 title: '<%= strings.UiShareTitle %>',
                 desc: '<%= strings.UiShareDescription %>',
-                link: window.location.href,
+                link: '<%= wxConfig.shareLink %>',
                 imgUrl: '<%= wxConfig.shareImageLink %>',
                 trigger: function (res) {
                     alert('start sharing...');
@@ -94,17 +102,12 @@
                     alert('share complete');
                 }
             };
-            if (!InWechat) {
-                // remove link to public account
-                var link = document.getElementById("follow-account");
-                link.parentElement.innerHTML = link.innerHTML;
-            }
             wx.ready(function () {
                 alert(JSON.stringify(data));
-                wx.onMenuShareAppMessage(data);
                 wx.onMenuShareTimeline(data);
-                wx.onMenuShareWeibo(data);
+                wx.onMenuShareAppMessage(data);
                 wx.onMenuShareQQ(data);
+                wx.onMenuShareWeibo(data);
             });
             wx.error(function (err) {
                 alert("error: " + JSON.stringify(err));
