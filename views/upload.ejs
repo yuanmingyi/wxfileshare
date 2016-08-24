@@ -125,7 +125,7 @@
                 var weiboContent = '';
                 WeixinJSBridge.on('menu:share:weibo', function(argv) {
                     WeixinJSBridge.invoke('shareWeibo', {
-                            'content': '<%= strings.UiShareTitle %>'，
+                            'content': '<%= strings.UiShareTitle %>',
                             'url': '<%= wxConfig.shareLink %>'
                         }, function(res) {
                     });
