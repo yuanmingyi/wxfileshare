@@ -53,7 +53,7 @@
                 <input name="file" id="uploader" type="file" />
             </form>
         </div>
-        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <!--<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>-->
         <script type="text/javascript">
             var debugWx = false;
             var params = location.search.slice(1).split('&');
@@ -62,6 +62,12 @@
                     debugWx = true;
                 }
             });
+            if (!InWechat) {
+                // remove link to public account
+                var link = document.getElementById("follow-account");
+                link.parentElement.innerHTML = link.innerHTML;
+            }
+/*
             wx.config({
                 debug: debugWx,
                 appId: '<%= wxConfig.appId %>',
@@ -75,11 +81,6 @@
                     'closeWindow'
                 ]
             });
-            if (!InWechat) {
-                // remove link to public account
-                var link = document.getElementById("follow-account");
-                link.parentElement.innerHTML = link.innerHTML;
-            }
             var data = {
                 title: '<%= strings.UiShareTitle %>',
                 desc: '<%= strings.UiShareDescription %>',
@@ -94,12 +95,13 @@
             };
             wx.ready(function () {
                 alert(JSON.stringify(data));
-                //wx.onMenuShareTimeline(data);
-                //wx.onMenuShareAppMessage(data);
+                wx.onMenuShareTimeline(data);
+                wx.onMenuShareAppMessage(data);
                 wx.error(function (err) {
                     alert("error: " + JSON.stringify(err));
                 });
             });
+*/
             $(function() {
                 var shareData = {
                     'appid': '',
