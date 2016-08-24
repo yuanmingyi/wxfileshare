@@ -95,12 +95,40 @@
             };
             wx.ready(function () {
                 alert(JSON.stringify(data));
-                wx.onMenuShareTimeline(data);
-                wx.onMenuShareAppMessage(data);
-                wx.onMenuShareQQ(data);
-                wx.onMenuShareWeibo(data);
+                //wx.onMenuShareTimeline(data);
+                //wx.onMenuShareAppMessage(data);
+                //wx.onMenuShareQQ(data);
+                //wx.onMenuShareWeibo(data);
                 wx.error(function (err) {
                     alert("error: " + JSON.stringify(err));
+                });
+            });
+            $(function() {
+                var shareData = {
+                    'appid': '',
+                    'img_url': '<%= wxConfig.shareImageLink %>',
+                    'img_width': '300',
+                    'img_height': '300',
+                    'link': '<%= wxConfig.shareLink %>',
+                    'desc': '<%= strings.UiShareDescription %>',
+                    'title': '<%= strings.UiShareTitle %>'
+                };
+                // 发送给好友;
+                WeixinJSBridge.on('menu:share:appmessage', function(argv) {
+                    WeixinJSBridge.invoke('sendAppMessage', shareData, function(res) {})
+                });
+                // 分享到朋友圈;
+                WeixinJSBridge.on('menu:share:timeline', function(argv) {
+                    WeixinJSBridge.invoke('shareTimeline', shareData, function(res) {});
+                });
+                // 分享到微博;
+                var weiboContent = '';
+                WeixinJSBridge.on('menu:share:weibo', function(argv) {
+                    WeixinJSBridge.invoke('shareWeibo', {
+                            'content': '<%= strings.UiShareTitle %>'，
+                            'url': '<%= wxConfig.shareLink %>'
+                        }, function(res) {
+                    });
                 });
             });
         </script>
