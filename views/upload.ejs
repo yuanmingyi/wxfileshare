@@ -71,8 +71,6 @@
                 jsApiList: [
                     'onMenuShareTimeline',
                     'onMenuShareAppMessage',
-                    'onMenuShareQQ',
-                    'onMenuShareWeibo',
                     'closeWindow'
                 ]
             });
@@ -95,14 +93,13 @@
             };
             wx.ready(function () {
                 alert(JSON.stringify(data));
-                //wx.onMenuShareTimeline(data);
-                //wx.onMenuShareAppMessage(data);
-                //wx.onMenuShareQQ(data);
-                //wx.onMenuShareWeibo(data);
+                wx.onMenuShareTimeline(data);
+                wx.onMenuShareAppMessage(data);
                 wx.error(function (err) {
                     alert("error: " + JSON.stringify(err));
                 });
             });
+        /*
             $(function() {
                 var shareData = {
                     'appid': '',
@@ -131,6 +128,7 @@
                     });
                 });
             });
+        */
         </script>
     </body>
 </html>
