@@ -61,7 +61,7 @@
             });
             wx.config({
                 debug: debugWx,
-                appId: 'wx32bb357787fcad8c', //'<%= wxConfig.appId %>',
+                appId: '<%= wxConfig.appId %>',
                 timestamp: '<%= wxConfig.timestamp %>',
                 nonceStr: '<%= wxConfig.nonceStr %>',
                 signature: '<%= wxConfig.signature %>',
@@ -70,6 +70,10 @@
                     'onMenuShareAppMessage',
                     'onMenuShareQQ',
                     'onMenuShareWeibo',
+                    'menu:share:timeline',
+                    'menu:share:appmessage',
+                    'menu:share:qq',
+                    'menu:share:weiboApp',
                     'closeWindow'
                 ]
             });
